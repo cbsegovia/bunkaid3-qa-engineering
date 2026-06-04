@@ -1,0 +1,52 @@
+{
+  "schemaVersion": 7,
+  "templateRepo": "upex-galaxy/agentic-qa-boilerplate",
+  "templateCommit": "",
+  "perComponentCommit": {
+    "skills": "fae496b530c610422231f32ed629b3ff5c602d9a",
+    "commands": "92478af0100187cddace8618a427a7e3b4860b90",
+    "scripts": "92478af0100187cddace8618a427a7e3b4860b90",
+    "docs": "92478af0100187cddace8618a427a7e3b4860b90",
+    "cli": "92478af0100187cddace8618a427a7e3b4860b90",
+    "vscode": "92478af0100187cddace8618a427a7e3b4860b90",
+    "husky": "92478af0100187cddace8618a427a7e3b4860b90",
+    "agents-docs": "92478af0100187cddace8618a427a7e3b4860b90",
+    "claude-config": "92478af0100187cddace8618a427a7e3b4860b90",
+    "tooling": "fae496b530c610422231f32ed629b3ff5c602d9a"
+  },
+  "syncedComponents": [],
+  "ignoreFileSync": {
+    ".prettierignore": {
+      "lastSyncedSha": "560d6a347dad1078d475af5e592d717cf8cd12f5",
+      "appendedLines": [
+        "api/openapi*",
+        "api/.openapi-config.json",
+        ".playwright-mcp/",
+        ".claude/worktrees/"
+      ]
+    },
+    ".gitignore": {
+      "lastSyncedSha": "597eb91c45f4490cc9ed77cd1204fadc792add6d",
+      "appendedLines": [
+        "**/evidence/"
+      ]
+    }
+  },
+  "packageJsonSync": {
+    "package.json": {
+      "scripts": {
+        "lastSyncedSha": "f06c50d56ebaa88567056a7dba3a01b6158880a6",
+        "appliedKeys": [
+          "vars:env:check"
+        ]
+      },
+      "devDependencies": {
+        "lastSyncedSha": "f06c50d56ebaa88567056a7dba3a01b6158880a6",
+        "appliedKeys": []
+      }
+    }
+  },
+  "cliVersion": "7.0",
+  "lastSyncedAt": "2026-06-02T22:48:49.771Z",
+  "variableSystemVersion": 1
+}

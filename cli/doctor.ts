@@ -32,7 +32,15 @@ import { readFile } from 'node:fs/promises';
 import { homedir } from 'node:os';
 import { join, resolve } from 'node:path';
 
-import * as tui from './lib/tui.ts';
+// Canonical variable manifest (source of truth — D1). Imports only `node:fs`,
+// so it is safe to load statically here without breaking the dependency-free
+// `--preflight` contract (no third-party deps pulled in).
+import { requiredNow, varsFor } from './lib/variables-manifest.ts';
+
+// `tui` pulls third-party deps (boxen/cli-table3/figures/picocolors). It is
+// imported lazily inside main() so `--preflight` loads only node built-ins and
+// runs safely on a fresh clone before `bun install`.
+let tui!: typeof import('./lib/tui.ts');
 
 // ----------------------------------------------------------------------------
 // Constants
@@ -52,35 +60,15 @@ const MIN_BUN: readonly [number, number, number] = [1, 0, 0];
 
 // Env vars surfaced by doctor.
 //
-// Split into two tiers:
-//   - DAY_ZERO_VARS — collectable on a fresh clone (user has these or can sign
-//     up for them without an existing backend project). Installer also prompts.
-//   - PROJECT_BOUND_VARS — require an existing backend / Postman workspace /
-//     DB connection. Deferred by the installer; doctor reports them as pending.
+// Source of truth = `VAR_MANIFEST` (D1) via `varsFor('local')` — resolved at the
+// point of use in `runDoctor` rather than a separate hand-maintained list (which
+// used to drift from the installer). DBHub vars live in the manifest but are
+// surfaced separately/manually (edit `dbhub.toml`), so they are filtered out at
+// the call site; `VAR_HINTS` provides the per-var help text for reported vars.
 //
-// DBHub vars are NOT listed here — DBHub setup is fully manual (edit
-// `dbhub.toml` based on the target project's DB). See .env.example.
-const DAY_ZERO_VARS = [
-  'TEST_ENV',
-  'LOCAL_USER_EMAIL',
-  'LOCAL_USER_PASSWORD',
-  'STAGING_USER_EMAIL',
-  'STAGING_USER_PASSWORD',
-  'TAVILY_API_KEY',
-  'RESEND_API_KEY',
-  'ATLASSIAN_URL',
-  'ATLASSIAN_EMAIL',
-  'ATLASSIAN_API_TOKEN',
-] as const;
-
-const PROJECT_BOUND_VARS = [
-  'API_BASE_URL',
-  'OPENAPI_SPEC_PATH',
-  'API_TOKEN',
-  'POSTMAN_API_KEY',
-] as const;
-
-const REQUIRED_VARS = [...DAY_ZERO_VARS, ...PROJECT_BOUND_VARS] as const;
+// `requiredNow(spec, env)` decides required-vs-optional given the current
+// TEST_ENV (e.g. STAGING_USER_* is required only when TEST_ENV=staging). Vars
+// that are not required-now are still reported (set/missing) but do NOT block.
 
 const VAR_HINTS: Record<string, { hint: string, where: string }> = {
   TEST_ENV: {
@@ -202,7 +190,7 @@ function parseEnvFile(content: string): Record<string, string> {
     if (line.length === 0 || line.startsWith('#')) { continue; }
     const eq = line.indexOf('=');
     if (eq <= 0) { continue; }
-    const key = line.slice(0, eq).trim();
+    const key = line.slice(0, eq).trim().replace(/^export\s+/, '');
     let value = line.slice(eq + 1).trim();
     if (
       (value.startsWith('"') && value.endsWith('"'))
@@ -220,7 +208,10 @@ async function detectDirenv(): Promise<DirenvState> {
   if (!version.ok) { return { installed: false }; }
 
   const status = tryRun('direnv', ['status']);
-  const envrcAllowed = /Found RC allowed true/.test(status.stdout);
+  // Modern direnv prints `Found RC allowed 0` (0 = Allow); older variants used
+  // `true`. Match the numeric enum and treat 0 (or legacy true) as allowed.
+  const allowMatch = status.stdout.match(/Found RC allowed (\d+|true)/);
+  const envrcAllowed = allowMatch !== null && (allowMatch[1] === '0' || allowMatch[1] === 'true');
 
   const candidates = ['.bashrc', '.zshrc', '.bash_profile', '.profile'];
   let hookInRc = false;
@@ -268,6 +259,14 @@ function shellHookLine(): { line: string, rc: string } {
   if (shell.endsWith('fish')) {
     return { line: 'direnv hook fish | source', rc: '~/.config/fish/config.fish' };
   }
+  if (shell.endsWith('bash')) {
+    return { line: 'eval "$(direnv hook bash)"', rc: '~/.bashrc' };
+  }
+  // No POSIX $SHELL (typical on native Windows PowerShell) — advise the pwsh hook
+  // instead of mis-instructing the user to edit ~/.bashrc.
+  if (process.platform === 'win32') {
+    return { line: 'Invoke-Expression "$(direnv hook pwsh)"', rc: '$PROFILE' };
+  }
   return { line: 'eval "$(direnv hook bash)"', rc: '~/.bashrc' };
 }
 
@@ -289,14 +288,15 @@ function compareVersion(a: readonly number[], b: readonly number[]): number {
 // ----------------------------------------------------------------------------
 
 function preflightFail(msg: string, fix: string): never {
-  tui.log.error(`Preflight failed: ${msg}`);
-  tui.log.warn(`Fix: ${fix}`);
+  // Dependency-free output — preflight may run before `bun install`, so no TUI.
+  process.stderr.write(`Preflight failed: ${msg}\n`);
+  process.stderr.write(`  Fix: ${fix}\n`);
   process.exit(1);
 }
 
 function runPreflight(): never {
-  // Print a minimal header for preflight — no full logo, just the section banner
-  tui.section('Preflight check');
+  // Dependency-free header — preflight loads no TUI (third-party) modules.
+  process.stdout.write('\nPreflight check\n');
 
   const bunVersion = process.versions.bun;
   if (!bunVersion) {
@@ -318,7 +318,7 @@ function runPreflight(): never {
       'Run `bun install` first, then re-run `bun run setup`.',
     );
   }
-  tui.log.success(`Preflight OK (Bun ${bunVersion}, deps installed)`);
+  process.stdout.write(`Preflight OK (Bun ${bunVersion}, deps installed)\n`);
   process.exit(0);
 }
 
@@ -352,15 +352,19 @@ async function runDoctor(): Promise<DoctorReport> {
     });
   }
 
-  // env vars
+  // env vars — manifest-driven (D1). Every reported var is set/missing; only
+  // vars that are required GIVEN the current env (`requiredNow` resolves the
+  // `{ ifEnv: 'TEST_ENV=staging' }` clauses) push a blocking credential action.
   const envValues = report.env_file_exists
     ? parseEnvFile(await readFile(ENV_PATH, 'utf8'))
     : {};
-  for (const v of REQUIRED_VARS) {
+  const localSpecs = varsFor('local').filter(spec => !spec.name.startsWith('DBHUB_'));
+  for (const spec of localSpecs) {
+    const v = spec.name;
     const value = envValues[v];
     const isSet = value !== undefined && value.trim().length > 0;
     report.env_vars[v] = isSet ? 'set' : 'missing';
-    if (!isSet) {
+    if (!isSet && requiredNow(spec, envValues)) {
       report.pending_actions.push({
         type: 'credential',
         target: v,
@@ -518,21 +522,40 @@ function printHuman(report: DoctorReport): void {
 // Entry
 // ----------------------------------------------------------------------------
 
-if (process.argv.includes('--preflight')) {
-  runPreflight();
+async function main(): Promise<void> {
+  if (process.argv.includes('--preflight')) {
+    runPreflight(); // never returns
+    return;
+  }
+
+  // Full mode needs the TUI (boxen/cli-table3/figures/picocolors). Load it lazily
+  // here — NOT at module top — so `--preflight` stays dependency-free and runs on
+  // a fresh clone before `bun install`.
+  tui = await import('./lib/tui.ts');
+
+  const asJson = process.argv.includes('--json');
+  try {
+    const report = await runDoctor();
+    if (asJson) {
+      process.stdout.write(`${JSON.stringify(report, null, 2)}\n`);
+    }
+    else {
+      printHuman(report);
+    }
+    process.exit(report.status === 'ok' ? 0 : 1);
+  }
+  catch (err) {
+    const msg = (err as Error).message ?? String(err);
+    // Exit 2 = doctor internal error (distinct from 1 = needs-action). In --json
+    // mode emit a JSON envelope so agent consumers don't choke on a bare string.
+    if (asJson) {
+      process.stdout.write(`${JSON.stringify({ status: 'error', error: msg }, null, 2)}\n`);
+    }
+    else {
+      process.stderr.write(`Doctor failed: ${msg}\n`);
+    }
+    process.exit(2);
+  }
 }
 
-const asJson = process.argv.includes('--json');
-
-runDoctor().then((report) => {
-  if (asJson) {
-    process.stdout.write(`${JSON.stringify(report, null, 2)}\n`);
-  }
-  else {
-    printHuman(report);
-  }
-  process.exit(report.status === 'ok' ? 0 : 1);
-}).catch((err) => {
-  process.stderr.write(`Doctor failed: ${(err as Error).message ?? String(err)}\n`);
-  process.exit(2);
-});
+void main();
