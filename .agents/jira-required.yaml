@@ -177,6 +177,31 @@ unmapped:
 # — declare a slug here when the methodology expects a field semantically but
 # no real Jira field exists yet, then promote it to `required:` once configured.)
 
+# Jira issue link types the methodology uses. Slugs validated by `bun run vars:check`;
+# workspace resolution (`.agents/jira-link-types.json`) validated by `bun run jira:check`.
+link_types:
+  required:
+    test:
+      name: Tests
+      outward: tests
+      inward: is tested by
+      description: Links a Story to its Test Case issues (test-documentation touchpoint).
+      used_by: [test-documentation, sprint-testing, shift-left-testing]
+
+    problem_incident:
+      name: Problem/Incident
+      outward: problem/incident
+      inward: is caused by
+      description: Links a Story to the Bug filed against it during sprint testing.
+      used_by: [sprint-testing]
+
+    blocks:
+      name: Blocks
+      outward: blocks
+      inward: is blocked by
+      description: Links a Bug back to the Story it is blocking (QA formal block gate).
+      used_by: [sprint-testing]
+
 # Issue types (`work_types`) plus the canonical statuses + transitions the
 # methodology requires per work type. Validated by `bun run jira:check` against
 # the catalog at `.agents/jira-workflows.json`. Status / transition slugs are
