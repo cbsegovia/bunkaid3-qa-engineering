@@ -201,7 +201,7 @@ Rules:
 
 ## 7. Description template (full TC documentation)
 
-The Description is load-bearing in Jira Native mode and still recommended in Xray mode (Xray's structured Steps field is minimal). Paste this after the Test is created with `[ISSUE_TRACKER_TOOL] Update Issue`.
+The Description is load-bearing in Jira Native mode and still recommended in Xray mode (Xray's structured Steps field is minimal). Paste this after the Test is created with `[ISSUE_TRACKER_TOOL] Update Issue`. **Format per `../../acli/references/adf-authoring-style.md`**: prefer a table for the step → expected grid (more scannable than bullet lists), nested lists for multi-level preconditions, and a panel for a critical assumption — richness with purpose, not decoration.
 
 ```
 ## Related Story
@@ -297,7 +297,7 @@ Notes:
 [ISSUE_TRACKER_TOOL] Link Issues:
   from: {TEST_KEY}
   to:   {STORY_KEY}
-  linkType: "is tested by"
+  linkType: {{jira.link_types.test.name}}   # Story is tested by Test
 
 [ISSUE_TRACKER_TOOL] Update Issue:
   issue: {TEST_KEY}
@@ -309,6 +309,8 @@ Notes:
   # later: ready to run
   # later: for manual OR automation review -> approve to automate
 ```
+
+> Resolve the `test` link type by slug only and verify direction after creation — see `agentic-qa-core/references/traceability-linking.md` (§2 slug resolution, §4 directionality + mandatory verification).
 
 ### Jira + Xray (Cucumber)
 
@@ -329,17 +331,21 @@ Notes:
 [ISSUE_TRACKER_TOOL] Link Issues:
   from: {TEST_KEY}
   to:   {STORY_KEY}
-  linkType: "is tested by"
+  linkType: {{jira.link_types.test.name}}   # Story is tested by Test
 
-[ISSUE_TRACKER_TOOL] Link Issues:
-  from: {TEST_KEY}
-  to:   {TEST_SET_KEY}
-  linkType: "is part of test set"   # if using Test Sets
+# Test ↔ Test Set membership is NOT a Jira issuelink — do NOT create it via
+# [ISSUE_TRACKER_TOOL] link create. It is Xray-internal state managed via the
+# /xray-cli skill (add-to-set). See traceability-linking.md §9.
+[TMS_TOOL] Add Test to Test Set:   # /xray-cli only — Xray-internal, NOT a Jira link
+  test:    {TEST_KEY}
+  testSet: {TEST_SET_KEY}
 
 [ISSUE_TRACKER_TOOL] Transition Issue:
   issue: {TEST_KEY}
   transition: start design
 ```
+
+> Resolve the `test` link type by slug only and verify direction after creation — see `agentic-qa-core/references/traceability-linking.md` (§2 slug resolution, §4 directionality, §9 Test Set caveat: membership goes through `/xray-cli`, never `acli link create`).
 
 ### Jira + Xray (Manual)
 
@@ -466,7 +472,7 @@ Jira Native lacks run history per Test. If historical trend matters, store runs 
 
 ## 11. Local cache — markdown per TC
 
-After TMS creation, write one markdown per TC into `.context/PBI/{module}/{story}/tests/{TC-ID}-{slug}.md`. This lets `test-automation` hand off without re-reading the TMS.
+After TMS creation, write one markdown per TC into `.context/PBI/epics/EPIC-<KEY>-<slug>/stories/STORY-<KEY>-<slug>/test-cases/{TC-ID}-{slug}.md` (NON-Jira hand-authored cache — directory is `test-cases/`, NOT `tests/`, since the sync script owns the top-level `.context/PBI/tests/` tree for Jira Test issues). This lets `test-automation` hand off without re-reading the TMS.
 
 ```markdown
 ---
@@ -549,7 +555,7 @@ The frontmatter is machine-readable. A later `test-automation` run greps for `ou
 - [ ] Xray mode: Test Type set (Manual / Cucumber / Generic)
 - [ ] Xray mode: Linked to Test Set (if project uses Test Sets)
 - [ ] Workflow state = Ready (or Manual / Candidate once decision is made)
-- [ ] Local cache markdown created under `.context/PBI/{module}/{story}/tests/`
+- [ ] Local cache markdown created under `.context/PBI/epics/EPIC-<KEY>-<slug>/stories/STORY-<KEY>-<slug>/test-cases/`
 
 ---
 

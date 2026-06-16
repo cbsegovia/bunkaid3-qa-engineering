@@ -78,7 +78,7 @@
  * Usage: bun run scripts/lint-skills.ts   (or: bun run skills:check)
  */
 
-import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
+import { existsSync, lstatSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 
 // -----------------------------------------------------------------------------
@@ -719,9 +719,14 @@ function walkSkillMarkdown(dir: string, files: string[] = []): string[] {
 
 /** Map a SKILLS_DIR-rooted file path to its owning skill slug, or null. */
 function skillSlugForFile(file: string): string | null {
-  const prefix = `${SKILLS_DIR}/`;
-  if (!file.startsWith(prefix)) { return null; }
-  const rest = file.slice(prefix.length);
+  // Normalize separators before comparing. `SKILLS_DIR` and `file` are built with
+  // path.join (backslashes on Windows), but the prefix is forward-slash-suffixed.
+  // Without normalization every startsWith() fails on Windows, so no file maps to a
+  // skill slug and every tool-owner skill loses its SKILL-LITERAL-TOOL/CFID exemption.
+  const normFile = file.replace(/\\/g, '/');
+  const prefix = `${SKILLS_DIR.replace(/\\/g, '/')}/`;
+  if (!normFile.startsWith(prefix)) { return null; }
+  const rest = normFile.slice(prefix.length);
   const slash = rest.indexOf('/');
   return slash === -1 ? rest : rest.slice(0, slash);
 }
@@ -881,6 +886,10 @@ function main(): void {
 
   for (const entry of readdirSync(SKILLS_DIR)) {
     const slugPath = join(SKILLS_DIR, entry);
+    // Symlinked entries (community skills linked from .agents/skills) are NOT
+    // T1 — their tier comes from install.ts. Mirrors the symlink-awareness in
+    // build-skill-registry.ts so tier classification stays consistent.
+    if (lstatSync(slugPath).isSymbolicLink()) { continue; }
     if (!statSync(slugPath).isDirectory()) { continue; }
 
     const skillMd = join(slugPath, 'SKILL.md');

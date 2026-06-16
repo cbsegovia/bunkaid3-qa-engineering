@@ -3,26 +3,28 @@
   "templateRepo": "upex-galaxy/agentic-qa-boilerplate",
   "templateCommit": "",
   "perComponentCommit": {
-    "skills": "fae496b530c610422231f32ed629b3ff5c602d9a",
-    "commands": "92478af0100187cddace8618a427a7e3b4860b90",
-    "scripts": "92478af0100187cddace8618a427a7e3b4860b90",
-    "docs": "92478af0100187cddace8618a427a7e3b4860b90",
+    "skills": "c7605d0eec5ba9cd53d8960f130a879524e58ea1",
+    "commands": "02b93fbc43a3295d4c058e45443b17d8c6a8cfd1",
+    "scripts": "36e23cb24b50a7e5269f4033c90eef28c0681393",
+    "docs": "b99a2689f4d2a85f4d6fe0997d7627d0e1f20b16",
     "cli": "92478af0100187cddace8618a427a7e3b4860b90",
-    "vscode": "92478af0100187cddace8618a427a7e3b4860b90",
+    "vscode": "c7605d0eec5ba9cd53d8960f130a879524e58ea1",
     "husky": "92478af0100187cddace8618a427a7e3b4860b90",
-    "agents-docs": "92478af0100187cddace8618a427a7e3b4860b90",
-    "claude-config": "92478af0100187cddace8618a427a7e3b4860b90",
-    "tooling": "fae496b530c610422231f32ed629b3ff5c602d9a"
+    "agents-docs": "b99a2689f4d2a85f4d6fe0997d7627d0e1f20b16",
+    "claude-config": "01c0a2f669c592a2bb26b5abc8d112b6eda5da40",
+    "tooling": "01c0a2f669c592a2bb26b5abc8d112b6eda5da40",
+    "env-template": "b99a2689f4d2a85f4d6fe0997d7627d0e1f20b16"
   },
   "syncedComponents": [],
   "ignoreFileSync": {
     ".prettierignore": {
-      "lastSyncedSha": "560d6a347dad1078d475af5e592d717cf8cd12f5",
+      "lastSyncedSha": "c458761b1ac4605ca54f82dcf30411797bfc6b0a",
       "appendedLines": [
         "api/openapi*",
         "api/.openapi-config.json",
         ".playwright-mcp/",
-        ".claude/worktrees/"
+        ".claude/worktrees/",
+        ".backups/"
       ]
     },
     ".gitignore": {
@@ -35,18 +37,19 @@
   "packageJsonSync": {
     "package.json": {
       "scripts": {
-        "lastSyncedSha": "f06c50d56ebaa88567056a7dba3a01b6158880a6",
+        "lastSyncedSha": "da8e0cd10ebee88a102e5595a478f92580b48ea1",
         "appliedKeys": [
-          "vars:env:check"
+          "vars:env:check",
+          "env"
         ]
       },
       "devDependencies": {
-        "lastSyncedSha": "f06c50d56ebaa88567056a7dba3a01b6158880a6",
+        "lastSyncedSha": "da8e0cd10ebee88a102e5595a478f92580b48ea1",
         "appliedKeys": []
       }
     }
   },
   "cliVersion": "7.0",
-  "lastSyncedAt": "2026-06-02T22:48:49.771Z",
+  "lastSyncedAt": "2026-06-13T22:42:28.122Z",
   "variableSystemVersion": 1
 }

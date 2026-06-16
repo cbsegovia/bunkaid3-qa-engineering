@@ -1,6 +1,6 @@
 ---
 name: agentic-qa-onboard
-description: "Walks new users through this repo's QA flow — Playwright + KATA + Allure + Xray stack, Jira QA workflow (Backlog → Shift-Left QA → Estimation → Ready For Dev → Ready For QA → In Testing → Tested → Closed), /shift-left-testing for pre-sprint AC refinement on backlog Stories, /sprint-testing for in-sprint manual QA, /test-documentation for TMS test cases, /test-automation for KATA-compliant E2E/API tests, /regression-testing for CI suite execution, /framework-development for boilerplate evolution, MCPs available (Context7, Tavily, Atlassian, Playwright, DBHub, OpenAPI, Postman), critical env vars. Triggers on: `onboard me to QA`, `explain this QA repo`, `first time using this`, `primer vez en QA`, `/agentic-qa-onboard`. Do NOT use for: pre-sprint refinement (use /shift-left-testing), feature QA on a ticket (use /sprint-testing), authoring test cases in TMS (use /test-documentation), writing automated tests (use /test-automation), running regression suites (use /regression-testing)."
+description: "Walks new users through this repo's QA flow — Playwright + KATA + Allure + Xray stack, Jira QA workflow (Backlog → Shift-Left QA → Estimation → Ready For Dev → Ready For QA → In Testing → Tested → Closed), /shift-left-testing for pre-sprint AC refinement on backlog Stories, /sprint-testing for in-sprint manual QA, /test-documentation for TMS test cases, /test-automation for KATA-compliant E2E/API tests, /regression-testing for CI suite execution, /framework-development for boilerplate evolution, MCPs available (Context7, Tavily, Atlassian, Playwright, DBHub, OpenAPI, Postman), critical env vars. ALSO the front desk for anyone who is lost or wants to understand how the repo or any workflow skill works — conceptually AND visually: it explains in plain human language (suspending caveman/compressed register) and can open per-skill how-it-works presentations (English + Spanish) in the user's default browser after asking. Triggers on: `onboard me to QA`, `explain this QA repo`, `first time using this`, `primer vez en QA`, `/agentic-qa-onboard`, `I don't know how to use this`, `how does sprint-testing / test-automation work`, `how does this skill work`, `show me how it works`, `teach me how QA works here`, `walk me through this skill`, `no sé cómo usar esto`, `no entiendo cómo funciona el repo`, `cómo funciona este skill`, `explícame cómo funciona`, `enséñame cómo se hace`. Do NOT use for: pre-sprint refinement (use /shift-left-testing), feature QA on a ticket (use /sprint-testing), authoring test cases in TMS (use /test-documentation), writing automated tests (use /test-automation), running regression suites (use /regression-testing)."
 license: MIT
 compatibility: [claude-code, opencode]
 phase: bootstrap
@@ -22,6 +22,51 @@ model_preferences:
 Activate when a user lands on this repo for the first time and asks "where do I start?", "how does QA work here?", or invokes `/agentic-qa-onboard`. The skill is a guided tour, not an executor: it explains the stack, the QA pipeline (pre-sprint Stage 0 + in-sprint Stages 1-6), the MCPs, and the env vars that everything depends on, then hands off to the right downstream skill.
 
 This skill is specific to **this** Playwright + KATA QA boilerplate and points at the concrete entry points (`/shift-left-testing`, `/sprint-testing`, `/test-automation`, `/test-documentation`, `/regression-testing`, `/framework-development`).
+
+---
+
+## Teaching mode — when someone is lost or wants to understand a skill
+
+This skill is also the **front desk** for anyone who is confused: *"I don't know how to use this"*, *"how does `/sprint-testing` actually work?"*, *"what does this repo even do?"*, *"explain test-automation to me"*, *"no entiendo cómo funciona esto"*. When that happens, step into the scene as a friendly guide and follow these rules:
+
+1. **Speak like a human, not a terminal.** For the whole explanation, **suspend any compressed / caveman register** — full sentences, warm tone, simple words, zero unexplained jargon. Define each technical term the first time you use it ("an ATC — basically one complete test case, start to finish"). This is an explicit in-skill override of the default register; resume your normal style once the person is oriented.
+2. **Mirror the user's language.** Spanish in → explain in Spanish (the repo ships Spanish versions of every presentation — see below). English in → English.
+3. **Start from where they are.** If the goal is unclear, ask ONE quick question ("are you trying to test a ticket, or understand the whole flow?"). Don't dump all six stages on someone who asked about one.
+4. **Concept first, in plain words** — what the activity is and *why* it matters — before any command, flag, or file path.
+5. **Then offer the visual presentation.** Each workflow skill has a `how-it-works` deck that teaches the activity as a craft (Part 1) and then how the AI does it from the terminal (Part 2). Offer to open it in their browser — follow the opening protocol below.
+6. **Hand off when oriented.** Once they know which skill to call, point them at it and step back.
+
+---
+
+## How-it-works presentations (visual, in the browser)
+
+Five of the workflow skills ship a **self-contained HTML presentation** that teaches the activity twice: **Part 1 "The Craft"** (how a QA engineer does it by hand, step by step) and **Part 2 "The Acceleration"** (how the skill makes the AI do it from the terminal). The `xray-cli` skill ships a sixth deck of a different kind — a **concept primer** that explains Xray itself from zero (what it is, its six issue types, the natural flow, coverage, traceability, defects). Each exists in **English and Spanish** (technical terms stay in English in both).
+
+| Skill / activity         | English deck                                            | Spanish deck                                              |
+| ------------------------ | ------------------------------------------------------- | --------------------------------------------------------- |
+| Shift-Left Testing       | `.claude/skills/shift-left-testing/how-it-works.html`   | `.claude/skills/shift-left-testing/how-it-works.es.html`  |
+| Sprint Testing           | `.claude/skills/sprint-testing/how-it-works.html`       | `.claude/skills/sprint-testing/how-it-works.es.html`      |
+| Test Documentation & ROI | `.claude/skills/test-documentation/how-it-works.html`   | `.claude/skills/test-documentation/how-it-works.es.html`  |
+| Test Automation (KATA)   | `.claude/skills/test-automation/how-it-works.html`      | `.claude/skills/test-automation/how-it-works.es.html`     |
+| Regression & GO/NO-GO    | `.claude/skills/regression-testing/how-it-works.html`   | `.claude/skills/regression-testing/how-it-works.es.html`  |
+| Xray for Jira (concept)  | `.claude/skills/xray-cli/how-it-works.html`             | `.claude/skills/xray-cli/how-it-works.es.html`            |
+
+Single files (CSS + JS inlined) — they open by double-click, no server. Navigate with `←` `→`, `S` for speaker notes, `O` for the slide overview, `F` for fullscreen.
+
+### Opening protocol (ALWAYS ask first)
+
+Opening a deck launches the user's default browser — an outward, local action — so **never open one without asking, and open only ONE at a time.**
+
+1. **Announce + ask.** "I can open a short visual deck that walks through how `/sprint-testing` works — first the manual craft, then how the skill does it from the terminal. Want me to open it in your browser?"
+2. **Match the language** of the conversation: Spanish user → the `.es.html` file; English user → the `.html` file.
+3. **On a yes, open exactly one deck** (pick the OS command for the user's platform):
+   ```bash
+   open ".claude/skills/sprint-testing/how-it-works.es.html"     # macOS  → default browser
+   xdg-open ".claude/skills/sprint-testing/how-it-works.es.html" # Linux
+   start "" ".claude/skills/sprint-testing/how-it-works.es.html" # Windows
+   ```
+4. **One at a time.** Let the person watch and come back with questions before offering the next skill's deck. Do not batch-open several.
+5. **After it opens,** tell them the keys (`←` `→` to move, `S` for speaker notes) and offer to walk the slides together or answer questions as they go.
 
 ---
 
@@ -92,10 +137,10 @@ Backlog → Shift-Left QA → Estimation → Ready For Dev → In Progress → I
 
 `/sprint-testing UPEX-277`:
 
-1. Reads the ticket from Jira via `/acli`.
-2. Loads module context from `.context/PBI/{module}/`.
+1. Syncs the ticket from Jira via `bun run jira:sync-issues get <KEY> --include-comments` (canonical detailed read — `acli view` returns null for custom fields), then reads the materialized `.md` files.
+2. Loads the synced context from `.context/PBI/epics/EPIC-<KEY>-<slug>/stories/STORY-<KEY>-<slug>/` (Module = Epic; Jira-synced files are a read-only cache).
 3. Explores the relevant code in the target repo.
-4. Creates the PBI folder and ATP (Acceptance Test Plan).
+4. Authors the ATP (Acceptance Test Plan) → writes it to the Jira field (or fallback comment) → re-syncs; hand-writes only NON-Jira files (context.md, evidence/).
 5. Executes smoke + trifuerza exploration (UI / API / DB).
 6. Files ATR (Acceptance Test Report) + bug reports if defects found.
 7. Transitions the ticket through QA states.
@@ -136,7 +181,7 @@ Seven canonical MCPs ship with the boilerplate:
 
 - Use **Context7** for "how to use X" — official docs, current API
 - Use **Tavily** for "how to solve X" — community fixes, troubleshooting
-- Use **Atlassian** for ticket operations; for bulk Jira work prefer `/acli`
+- Use **Atlassian**/`/acli` for ticket WRITES (create, transition, comment, link); for detailed READS (custom fields, ACs, ATP/ATR, comments) use `bun run jira:sync-issues get`/`jql`
 - Use **Playwright MCP** for ad-hoc live browser interactions; for scripted runs use `/playwright-cli`
 
 `.mcp.json` lives at the repo root and is **gitignored** (it contains secrets).
@@ -151,7 +196,7 @@ Place these in `.env` before running anything that talks to a real environment:
 | ------------------------------------------------ | -------------------------------------------------- |
 | `LOCAL_USER_EMAIL` / `LOCAL_USER_PASSWORD`       | Local app login (Playwright fixtures)              |
 | `STAGING_USER_EMAIL` / `STAGING_USER_PASSWORD`   | Staging smoke tests, manual exploration            |
-| `ATLASSIAN_SITE` / `ATLASSIAN_EMAIL` / API token | `acli` Jira CLI + Atlassian MCP                    |
+| `ATLASSIAN_URL` / `ATLASSIAN_EMAIL` / API token  | `acli` Jira CLI + Atlassian MCP                    |
 | `XRAY_CLIENT_ID` / `XRAY_CLIENT_SECRET`          | `bun xray` CLI (Xray Cloud authentication)         |
 | `TAVILY_API_KEY`                                 | Tavily MCP                                         |
 | `POSTMAN_API_KEY`                                | Postman MCP                                        |

@@ -1,6 +1,6 @@
 # Skill Registry (auto-generated)
 
-> Generated: `2026-05-25T08:48:09.804Z`
+> Generated: `2026-06-13T22:42:31.247Z`
 > Generator: `bun scripts/build-skill-registry.ts`
 > Protocol: `.claude/skills/agentic-qa-core/references/skill-resolver.md`
 
@@ -35,7 +35,7 @@ Skills indexed: 13
 
 **Read full SKILL.md when**: the compact rules above are insufficient (e.g. novel scenario, debugging, or the briefing tells you to load the full skill).
 
-> Source: `.claude/skills/acli/SKILL.md` · phase: `unknown` · extraction strategy: B
+> Source: `.claude\skills\acli\SKILL.md` · phase: `unknown` · extraction strategy: B
 
 ---
 
@@ -55,7 +55,7 @@ Skills indexed: 13
 
 **Read full SKILL.md when**: the compact rules above are insufficient (e.g. novel scenario, debugging, or the briefing tells you to load the full skill).
 
-> Source: `.claude/skills/agentic-qa-core/SKILL.md` · phase: `unknown` · extraction strategy: B
+> Source: `.claude\skills\agentic-qa-core\SKILL.md` · phase: `unknown` · extraction strategy: B
 
 ---
 
@@ -64,26 +64,26 @@ Skills indexed: 13
 **Purpose**: Walks new users through this repo's QA flow — Playwright + KATA + Allure + Xray stack, Jira QA workflow (Backlog → Shift-Left QA → Estima...
 
 **Compact Rules**:
-- Reads the ticket from Jira via `/acli`.
-- Loads module context from `.context/PBI/{module}/`.
+- **Speak like a human, not a terminal.** For the whole explanation, **suspend any compressed / caveman register** — full sentences, warm tone, simple words, zero unexplained jargon. Define each technical term the first time you use it ("an ATC — basically one complete test case, start to finish"). This is an explicit in-skill override of the default register; resume your normal style once the person is oriented.
+- **Mirror the user's language.** Spanish in → explain in Spanish (the repo ships Spanish versions of every presentation — see below). English in → English.
+- **Start from where they are.** If the goal is unclear, ask ONE quick question ("are you trying to test a ticket, or understand the whole flow?"). Don't dump all six stages on someone who asked about one.
+- **Concept first, in plain words** — what the activity is and *why* it matters — before any command, flag, or file path.
+- **Then offer the visual presentation.** Each workflow skill has a `how-it-works` deck that teaches the activity as a craft (Part 1) and then how the AI does it from the terminal (Part 2). Offer to open it in their browser — follow the opening protocol below.
+- **Hand off when oriented.** Once they know which skill to call, point them at it and step back.
+- **Announce + ask.** "I can open a short visual deck that walks through how `/sprint-testing` works — first the manual craft, then how the skill does it from the terminal. Want me to open it in your browser?"
+- **Match the language** of the conversation: Spanish user → the `.es.html` file; English user → the `.html` file.
+- **On a yes, open exactly one deck** (pick the OS command for the user's platform):
+- **One at a time.** Let the person watch and come back with questions before offering the next skill's deck. Do not batch-open several.
+- **After it opens,** tell them the keys (`←` `→` to move, `S` for speaker notes) and offer to walk the slides together or answer questions as they go.
+- Syncs the ticket from Jira via `bun run jira:sync-issues get <KEY> --include-comments` (canonical detailed read — `acli view` returns null for custom fields), then reads the materialized `.md` files.
+- Loads the synced context from `.context/PBI/epics/EPIC-<KEY>-<slug>/stories/STORY-<KEY>-<slug>/` (Module = Epic; Jira-synced files are a read-only cache).
 - Explores the relevant code in the target repo.
-- Creates the PBI folder and ATP (Acceptance Test Plan).
-- Executes smoke + trifuerza exploration (UI / API / DB).
-- Files ATR (Acceptance Test Report) + bug reports if defects found.
-- Transitions the ticket through QA states.
-- Hands off to Stage 4 (`/test-documentation`) when a Candidate test case should be promoted to TMS.
-- Use **Context7** for "how to use X" — official docs, current API
-- Use **Tavily** for "how to solve X" — community fixes, troubleshooting
-- Use **Atlassian** for ticket operations; for bulk Jira work prefer `/acli`
-- Use **Playwright MCP** for ad-hoc live browser interactions; for scripted runs use `/playwright-cli`
-- [ ] Did you run `bun run setup`?
-- [ ] Did you fill `.env` with your own credentials (`LOCAL_*`, `STAGING_*`, `ATLASSIAN_*`, `XRAY_*`, `TAVILY_API_KEY`, `POSTMAN_API_KEY`)?
-- [ ] Did you populate `.agents/project.yaml` (run `bun run agents:setup` if not yet)?
+- Authors the ATP (Acceptance Test Plan) → writes it to the Jira field (or fallback comment) → re-syncs; hand-writes only NON-Jira files (context.md, evidence/).
 - (truncated — read full SKILL.md for the rest)
 
 **Read full SKILL.md when**: the compact rules above are insufficient (e.g. novel scenario, debugging, or the briefing tells you to load the full skill).
 
-> Source: `.claude/skills/agentic-qa-onboard/SKILL.md` · phase: `bootstrap` · extraction strategy: B
+> Source: `.claude\skills\agentic-qa-onboard\SKILL.md` · phase: `bootstrap` · extraction strategy: B
 
 ---
 
@@ -111,7 +111,7 @@ Skills indexed: 13
 
 **Read full SKILL.md when**: the compact rules above are insufficient (e.g. novel scenario, debugging, or the briefing tells you to load the full skill).
 
-> Source: `.claude/skills/framework-development/SKILL.md` · phase: `unknown` · extraction strategy: B
+> Source: `.claude\skills\framework-development\SKILL.md` · phase: `unknown` · extraction strategy: B
 
 ---
 
@@ -132,14 +132,14 @@ Skills indexed: 13
 - Unpushed / unpulled commits (ahead / behind upstream).
 - Upstream status (no upstream, up-to-date, diverged).
 - Remote name(s) — most repos have one (`origin`); some have a fork + upstream.
-- **Marker in `CLAUDE.md`** — search for `<!-- git-flow-master:strategy:VALUE -->` where `VALUE` is one of the seven slugs. If found, use it. This is the persisted decision.
+- **Marker in `CLAUDE.md`** — search for `<!-- git-flow-master:strategy:VALUE -->` where `VALUE` is one of the eight slugs. If found, use it. This is the persisted decision. Also read the decision markers if present — `<!-- git-flow-master:integration-branch:NAME -->`, `<!-- git-flow-master:promote-method:... -->`, `<!-- git-flow-master:feature-merge:... -->`, `<!-- git-flow-master:hotfix-policy:... -->`. Each marker that resolves a questionnaire answer means Strategy Setup SKIPS that question on re-run (idempotent).
 - **Single-branch heuristic** — `git branch -a` shows only `main` (or `master`) and no integration branch in the remote → `solo-main`.
 - **Two-branch heuristic** — exactly `main` (or `master`) + one of `{staging, dev, develop, integration}` exists upstream → `main-integration` (record the integration branch name).
 - (truncated — read full SKILL.md for the rest)
 
 **Read full SKILL.md when**: the compact rules above are insufficient (e.g. novel scenario, debugging, or the briefing tells you to load the full skill).
 
-> Source: `.claude/skills/git-flow-master/SKILL.md` · phase: `implementation` · extraction strategy: B
+> Source: `.claude\skills\git-flow-master\SKILL.md` · phase: `implementation` · extraction strategy: B
 
 ---
 
@@ -167,7 +167,7 @@ Skills indexed: 13
 
 **Read full SKILL.md when**: the compact rules above are insufficient (e.g. novel scenario, debugging, or the briefing tells you to load the full skill).
 
-> Source: `.claude/skills/judgment-day/SKILL.md` · phase: `unknown` · extraction strategy: B
+> Source: `.claude\skills\judgment-day\SKILL.md` · phase: `unknown` · extraction strategy: B
 
 ---
 
@@ -195,7 +195,7 @@ Skills indexed: 13
 
 **Read full SKILL.md when**: the compact rules above are insufficient (e.g. novel scenario, debugging, or the briefing tells you to load the full skill).
 
-> Source: `.claude/skills/project-discovery/SKILL.md` · phase: `unknown` · extraction strategy: B
+> Source: `.claude\skills\project-discovery\SKILL.md` · phase: `unknown` · extraction strategy: B
 
 ---
 
@@ -223,7 +223,7 @@ Skills indexed: 13
 
 **Read full SKILL.md when**: the compact rules above are insufficient (e.g. novel scenario, debugging, or the briefing tells you to load the full skill).
 
-> Source: `.claude/skills/regression-testing/SKILL.md` · phase: `unknown` · extraction strategy: B
+> Source: `.claude\skills\regression-testing\SKILL.md` · phase: `unknown` · extraction strategy: B
 
 ---
 
@@ -234,8 +234,8 @@ Skills indexed: 13
 **Compact Rules**:
 - `.context/business/business-feature-map.md` + `.context/business/business-data-map.md` — domain vocabulary, entity model, CRUD matrix. Anchors refined ACs in real entities and flows.
 - `.context/master-test-plan.md` — regression Epic + in-scope modules. Tells the refinement whether the Story falls inside an already-prioritized area.
-- The Story's Acceptance Criteria + `**Source spec:**` reference on Jira (fetched via `[ISSUE_TRACKER_TOOL]`). Canonical input — every refined AC must trace back here.
-- `.context/PBI/{module-name}/{TICKET-ID}-*/` if a PBI folder already exists for this Story (created by a prior `/sprint-testing` cycle). Carries earlier session notes worth honoring.
+- The Story's Acceptance Criteria + `**Source spec:**` reference on Jira. Detailed read via `bun run jira:sync-issues get <STORY_KEY> --include-comments`, then read the synced `acceptance-criteria.md` (+ description). NEVER `acli view` for custom fields. Canonical input — every refined AC must trace back here.
+- `.context/PBI/epics/EPIC-<KEY>-<slug>/stories/STORY-<KEY>-<slug>/` if a PBI folder already exists for this Story (created by a prior `/sprint-testing` cycle). Carries earlier session notes worth honoring.
 - `.agents/jira-workflows.json` — Story workflow + valid transitions (`backlog -> shift_left_qa -> estimation`). Source of `{{jira.transition.story.*}}` slugs used in Phase 3.
 - `.agents/jira-required.yaml` — canonical slug catalog. Source of `{{jira.acceptance_test_plan}}` and other Jira field slugs touched in handoff.
 - Update Jira description with "QA Refinements (Shift-Left Analysis)"
@@ -243,7 +243,7 @@ Skills indexed: 13
 - Labels: shift-left-reviewed + shift-left-{YYYY-MM-DD}
 - Transition: backlog -> shift_left_qa (analyze) -> estimation (estimate)
 - Verify trace
-- Always load `/acli` (Story fetch, custom-field update, comment, transition, label, link).
+- Always load `/acli` (custom-field update, comment, transition, label, link — all writes; plus the trivial key+summary+status candidate search). Story DETAIL reads (description, ACs, scope, comments, parent epic) go through `bun run jira:sync-issues get/jql` — NOT `acli view`.
 - **Modality jira-xray** AND user opts into Test Plan link draft for each Story -> also load `/xray-cli`. The default in shift-left is NO Test Plan creation (PO has not estimated yet, scope may shrink) — the ATP DRAFT lives on the Story description + comment + custom field. Ask the user before creating Test Plan issues.
 - **Modality jira-native** -> `/acli` alone covers `[ISSUE_TRACKER_TOOL]` and `[TMS_TOOL]`.
 - `.context/business/business-data-map.md`
@@ -251,7 +251,7 @@ Skills indexed: 13
 
 **Read full SKILL.md when**: the compact rules above are insufficient (e.g. novel scenario, debugging, or the briefing tells you to load the full skill).
 
-> Source: `.claude/skills/shift-left-testing/SKILL.md` · phase: `unknown` · extraction strategy: B
+> Source: `.claude\skills\shift-left-testing\SKILL.md` · phase: `unknown` · extraction strategy: B
 
 ---
 
@@ -264,22 +264,22 @@ Skills indexed: 13
 - `.agents/jira-required.yaml` — canonical slug catalog (custom fields, statuses, transitions) for the active workspace.
 - `.agents/jira-fields.json` — slug → numeric custom-field-ID mapping for `{{jira.<slug>}}` resolution at runtime.
 - `.agents/jira-workflows.json` — workflow + transition catalog (resolves Ready For QA → In Testing → Tested for Story / Bug / Test Case work types).
-- `.context/PBI/{module}/{TICKET-ID}-*/context.md` — ticket-local context: ACs, Team Discussion summary, session notes, open questions (read if it already exists from a prior Session Start).
+- `.context/PBI/epics/EPIC-<KEY>-<slug>/stories/STORY-<KEY>-<slug>/context.md` — ticket-local context: session notes, open questions (hand-authored; read if it already exists from a prior Session Start). NON-Jira file — never a Jira mirror.
 - `.context/master-test-plan.md` — regression Epic pointer, modality decision (Xray vs Jira-native), what to test and why.
-- `.context/business/business-feature-map.md` — feature catalog vocabulary; resolves "what module owns this story" for `{module-name}` PBI folder naming.
-- The Story or Bug ticket itself — AC, ATP, comments — fetched via `[ISSUE_TRACKER_TOOL]`. The ticket body is source-of-truth, not the local PBI mirror.
+- `.context/business/business-feature-map.md` — feature catalog vocabulary; resolves "what epic owns this story" for the `epics/EPIC-<KEY>-<slug>/` PBI folder naming (module = Epic, 1:1).
+- `.context/business/domain-glossary.md` (if present) — canonical domain vocabulary; consult BEFORE authoring the ATP, refined ACs, and TC outlines so test names, entity terms, and Gherkin wording use canonical terms and avoid anti-glossary banned terms. If a new or ambiguous term surfaces during testing, flag it in the Stage 3 QA comment for the PM to add via the glossary's change protocol — NEVER edit the glossary from a testing session.
+- The Story or Bug ticket itself — AC, ATP, comments — read via `bun run jira:sync-issues get <KEY> --include-comments`, then read the synced `.md` files (`story.md`, `acceptance-criteria.md`, `acceptance-test-plan.md`, `comments.md`) under the STORY folder. Jira is source-of-truth; the synced `.md` is a read-only cache. NEVER `acli workitem view` for custom fields — it returns `null`.
 - `.env` — `LOCAL_USER_*` / `STAGING_USER_*` credentials. NEVER hardcode; always read at runtime.
 - `kata-manifest.json` — registry of existing KATA Components + ATCs. Check before proposing new ATCs in Stage 3 hand-off so the test-automation phase doesn't duplicate work.
 - Story ID with status Ready-for-QA -> Single ticket / User Story.
 - Bug ID deployed to staging -> Single ticket / Bug.
 - Sprint number, "process sprint X", or an existing `SPRINT-{N}-TESTING.md` -> Batch sprint.
 - If the framework file does not exist yet, generate it first (see `sprint-orchestration.md`).
-- Compute prospective `<scope>` from invocation: `<JIRA-KEY>` (single-ticket) or `sprint-<N>/<JIRA-KEY>` (batch — once per ticket in the wave loop).
 - (truncated — read full SKILL.md for the rest)
 
 **Read full SKILL.md when**: the compact rules above are insufficient (e.g. novel scenario, debugging, or the briefing tells you to load the full skill).
 
-> Source: `.claude/skills/sprint-testing/SKILL.md` · phase: `unknown` · extraction strategy: B
+> Source: `.claude\skills\sprint-testing\SKILL.md` · phase: `unknown` · extraction strategy: B
 
 ---
 
@@ -294,20 +294,20 @@ Skills indexed: 13
 - `kata-manifest.json` (root) — authoritative registry of every Component (`api[]`, `ui[]`) and every `@atc('TICKET-ID')` ID. Anti-duplication gate per Critical Rule #12 in `CLAUDE.md`. MUST load before proposing any new `Page`, `Api`, `Steps` module, or `@atc` ID.
 - `.claude/skills/test-automation/references/kata-architecture.md` + `.claude/skills/test-automation/references/typescript-patterns.md` — full doctrine for KATA layers (TestContext / Base / Domain / Fixture), ATC identity, fixture selection, import-alias rules, params contracts.
 - `tests/components/` — existing Api / Page / Steps shape on disk. Establishes naming, helper-vs-ATC split, fixture registration patterns to follow.
-- `.context/PBI/{module}/{TICKET-ID}-*/implementation-plan.md` — if pre-existing (typically produced by `/test-documentation`), it carries the per-TC plan, candidate verdict, and component mapping. Cite it from the session `plan.md` rather than duplicating.
-- The Story's AC + ATP (via `[ISSUE_TRACKER_TOOL]`) — source of truth for scenarios that become ATCs. Resolve the issue key from the scope picker.
+- The Story's `implementation-plan.md` (dev plan) + the ATP under `.context/PBI/epics/EPIC-<KEY>-<slug>/stories/STORY-<KEY>-<slug>/` — Jira-synced, READ-ONLY caches. Jira is source of truth; NEVER hand-write these. Materialize via `bun run jira:sync-issues get <STORY-KEY> --include-comments`, then **read the ENTIRE synced Story folder** — every per-field `.md` (`story.md`, `acceptance-criteria.md`, scope, business rules, etc.) **plus `comments.md`** — not just one field. Omitting ACs, scope, business rules, or comment context produces incomplete ATCs. The **ATP read is modality-aware** (resolve via `.agents/project.yaml` `testing.tms_cli`, same gate as `/test-documentation` §Phase 0):
+- **Modality jira-native**: ATP = Story field `{{jira.acceptance_test_plan}}` → synced `acceptance-test-plan.md` in the Story folder (from the same `jira:sync-issues get <STORY-KEY> --include-comments`).
+- **Modality jira-xray**: ATP = Test Plan issue `description` → `bun run jira:sync-issues get <ATP_KEY>` → `test-plans/TESTPLAN-<KEY>-<slug>.md`; per-TC run results come from `[TMS_TOOL]` (xray-cli), not the sync.
+- The Story's AC (acceptance criteria) — source of truth for scenarios that become ATCs. Read from the same synced `.md` files (`acceptance-criteria.md` / `story.md`) produced by `bun run jira:sync-issues get <STORY-KEY> --include-comments`. NEVER use `[ISSUE_TRACKER_TOOL]` `view` for these custom fields — `view` returns `null` for `customfield_*`. If a field is absent from the instance, the sync emits a pointer stub and the content lives in comments/description per `.agents/jira-required.yaml` `fallback:`. Resolve the issue key from the scope picker. **TC note**: a TC body = the `Test` issue `description` (synced both modalities via `bun run jira:sync-issues get <TEST-KEY>`); the Xray Gherkin / Test-Steps plugin field is NOT synced — it mirrors the description, so read the synced TC `.md` for Gherkin/steps.
 - `api/schemas/` — OpenAPI-derived TypeScript types. Refresh via `bun run api:sync` if stale. Required for any Api component touching a new endpoint.
 - `.env` — credentials (`LOCAL_USER_EMAIL`, `STAGING_USER_PASSWORD`, etc.) read via `config.testUser` from `@variables`. Never hardcode; never guess.
 - Determine the prospective `<scope>` from the invocation context (ticket key, regression-driven TC, or module slug — see "Pick the planning scope first" below).
 - Check `.session/test-automation/<scope>/progress.md`.
 - If it does NOT exist → proceed to scope picker + Phase 1.
-- If it DOES exist:
-- Read `plan.md` (thin index) + the tail of `progress.md`.
 - (truncated — read full SKILL.md for the rest)
 
 **Read full SKILL.md when**: the compact rules above are insufficient (e.g. novel scenario, debugging, or the briefing tells you to load the full skill).
 
-> Source: `.claude/skills/test-automation/SKILL.md` · phase: `unknown` · extraction strategy: B
+> Source: `.claude\skills\test-automation\SKILL.md` · phase: `unknown` · extraction strategy: B
 
 ---
 
@@ -335,7 +335,7 @@ Skills indexed: 13
 
 **Read full SKILL.md when**: the compact rules above are insufficient (e.g. novel scenario, debugging, or the briefing tells you to load the full skill).
 
-> Source: `.claude/skills/test-documentation/SKILL.md` · phase: `unknown` · extraction strategy: B
+> Source: `.claude\skills\test-documentation\SKILL.md` · phase: `unknown` · extraction strategy: B
 
 ---
 
@@ -363,4 +363,4 @@ Skills indexed: 13
 
 **Read full SKILL.md when**: the compact rules above are insufficient (e.g. novel scenario, debugging, or the briefing tells you to load the full skill).
 
-> Source: `.claude/skills/xray-cli/SKILL.md` · phase: `unknown` · extraction strategy: B
+> Source: `.claude\skills\xray-cli\SKILL.md` · phase: `unknown` · extraction strategy: B
