@@ -13,7 +13,7 @@
       }
     }
   },
-  "outputDir": ".playwright/output",
+  "outputDir": ".context/PBI/epics/EPIC-BK-1-tenancy-identity/stories/STORY-BK-166-authentication-sign-up-and-sign-in-with-email-and-/evidence",
   "outputMode": "file",
   "console": {
     "level": "warning"

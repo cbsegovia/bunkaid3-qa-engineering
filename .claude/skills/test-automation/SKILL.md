@@ -28,9 +28,38 @@ KATA (Component Action Test Architecture) rewires the usual Page Object pattern.
 
 ---
 
+## Dependencies
+
+Requires `agentic-qa-core`. Loads on demand:
+
+- `agentic-qa-core/references/test-design-doctrine.md` — **MANDATORY before planning which ATCs to write from acceptance criteria.** Governs the 1:N ATC derivation, the formal-technique triggers (incl. BVA, which KATA's EP-merge rule does NOT replace), and the floor-not-ceiling coverage model.
+- `agentic-qa-core/references/briefing-template.md`, `./dispatch-patterns.md`, `./orchestration-doctrine.md`, `./session-management.md`, `./preflight-gate.md`, `./adr-doctrine.md` — cited inline by the sections that use them.
+
+## Compact Rules
+
+**Test-design doctrine (binding — full canon: `agentic-qa-core/references/test-design-doctrine.md`):**
+
+- "All ACs covered" is the FLOOR, not the success bar. The ATC set must also cover risk-beyond-AC: invalid/boundary inputs, auth/error paths, state transitions, and anomalies the AC is silent on.
+- 1:N is the default: one AC maps to multiple ATCs. EP-merge collapses same-behavior inputs INSIDE one partition into a parameterized ATC — it must NEVER collapse across distinct partitions, boundaries, or states. BVA cases are required wherever a range/limit/length/date-window exists (EP alone misses off-by-one).
+- Apply techniques by trigger: EP always; BVA on ranges/limits; State-Transition for stateful flows; Decision Table when 2+ conditions interact; Pairwise when 3+ combinable factors (log the reduction).
+- Parametrize for artifact economy: same-behavior data variants → ONE parameterized `@atc` (fixture / data-factory rows iterated by the test) per partition, NOT N ATCs; split only when action / outcome / state differs. (Canon: doctrine §"Part 2.5".)
+- An AC is the business assertion; an ATC is its concrete exploration (Precondition + Action + Assertions). Run the Test-Design Checklist before finalizing the plan.
+
+**Test-automation operational rules:**
+
+- Plan → Code → Review, always in order. Only automate `Candidate` verdicts from `/test-documentation`.
+- Fixture selection: API-only → `{ api }` (no browser); UI-only → `{ ui }`; hybrid → `{ test }`.
+- ATC = atomic mini-flow; NEVER calls another ATC. Reusable chains → a Steps module.
+- Max 2 positional params (3+ → object param). Locators inline (extract only at 2+ uses). Imports via aliases (`@api/`, `@schemas/`, `@utils/`) — no relative imports.
+- Public methods fail fast; utilities silent-fail (return null). Validate against `kata-manifest.json` before adding components/ATCs (anti-duplication gate).
+
+**Read full SKILL.md when**: writing KATA component code, choosing fixtures for a hybrid flow, or applying the Phase 3 review checklist.
+
+---
+
 ## Subagent Dispatch Strategy
 
-> **Orchestration & Session contracts**: this skill follows `./orchestration-doctrine.md` (mandatory subagent dispatch — main thread is command center) AND `./session-management.md` (Phase 0 resume check, plan-first persistence at `.session/<skill-slug>/<scope>/`, archive on completion). Phase 0 (resume check) and Phase 1 (plan write) are NOT optional.
+> **Orchestration & Session contracts**: this skill follows `./orchestration-doctrine.md` (mandatory subagent dispatch — main thread is command center) AND `./session-management.md` (Phase 0 resume check, plan-first persistence at `.session/<skill-slug>/<scope>/`, archive on completion). Phase 0 (resume check) and Phase 1 (plan write) are NOT optional. The orchestrator also applies the per-stage **Definition-of-Done gates** in `./stage-gates.md`: verify a stage's DoD (planning stages include the Test-Design Checklist) BEFORE recording its progress checkpoint and advancing.
 
 This skill is **per-scope**: `<scope>` = `<JIRA-KEY>` (ticket-driven / regression-driven) or `<module-slug>` (module-driven). Session state lives at `.session/test-automation/<scope>/{plan.md, progress.md}` per `agentic-qa-core/references/session-management.md` §3 + §9. The session `plan.md` is a thin INDEX that cites the canonical domain artifacts (`spec.md`, `automation-plan.md`, `atc/*.md`) under the Epic's `test-specs/` tree (`.context/PBI/epics/EPIC-<KEY>-<slug>/test-specs/<scope>/`) — domain content stays in the existing PBI tree, not duplicated.
 
@@ -80,7 +109,7 @@ Canonical reading order for any AI starting cold on a test-automation workflow. 
 | `kata-manifest.json` clean | REQUIRED | Anti-duplication source of truth (Critical Rule #12). `bun run kata:manifest:check` clean before proposing components/ATCs; `bun run kata:manifest` if stale. |
 | Active env + test-user creds | REQUIRED | Authored tests run live against `<<ACTIVE_ENV>>`. Env reachable + `.env` creds for the env (per role if multi-role). |
 | Playwright browsers | REQUIRED | `bunx playwright` resolves + chromium installed (`bun run pw:install`). |
-| OpenAPI MCP + `API_TOKEN` + `api/schemas/` synced | SCOPE — API/integration tests; needed at **Phase 1 Plan** too | Phase 1 explores endpoints (via the `openapi` MCP) to design ATCs + classify test-data — so the MCP is plan-time, not just run-time. Api components consume OpenAPI-derived types (`api/schemas/`; refresh `bun run api:sync`); authenticated calls need a live `API_TOKEN` (api-login flow, reference §6 → RESTART). |
+| OpenAPI MCP (schema read-only) + `api/schemas/` synced | SCOPE — API/integration tests; needed at **Phase 1 Plan** too | Phase 1 explores endpoints (via the `openapi` MCP, schema-read-only) to design ATCs + classify test-data — plan-time, not just run-time. Api components consume OpenAPI-derived types (`api/schemas/`; refresh `bun run api:sync`); authenticated test-code calls use the Playwright API fixture (`.auth/api-state.json` from `bun run api:login`) — no `API_TOKEN`/MCP injection, no restart. |
 | DBHub MCP | SCOPE — data setup/validation; needed at **Phase 1 Plan** too | Phase 1 explores the schema (via the `dbhub` MCP) to design data fixtures (Discover / Modify / Generate) — plan-time, not just run-time. `dbhub` answers a schema probe; `DBHUB_*` in `.env`. Unset → fill `.env` + RESTART. |
 | Issue-tracker (`[ISSUE_TRACKER_TOOL]`) | SCOPE — ticket/regression-driven | ATP + AC reads via `bun run jira:sync-issues`; TMS modality for the ATP source. Pure module-driven from an existing spec may not need it. |
 
@@ -139,7 +168,7 @@ Each phase has a gate. Do not start Code before the Plan is written and approved
 
 ### Phase 1 — Plan
 
-**MUST-load before any planning**: `kata-manifest.json` (root). It lists every Component and every ATC currently in the codebase. Use it to identify reuse, avoid duplicate `Page`/`Api` classes, and avoid minting an `@atc('TC-XXX')` ID that is already taken. This is enforced by Critical Rule #12 in `CLAUDE.md` and by the husky pre-commit gate.
+**MUST-load before any planning**: `kata-manifest.json` (root). It lists every Component and every ATC currently in the codebase. Use it to identify reuse, avoid duplicate `Page`/`Api` classes, and avoid minting an `@atc('PROJ-XXX')` ID that is already taken. This is enforced by Critical Rule #12 in `CLAUDE.md` and by the husky pre-commit gate.
 
 **Pre-flight checklist** (anti-duplication — run before writing the plan):
 
@@ -265,7 +294,7 @@ Rules:
 13. **Each test generates its own data.** No shared state between tests. Use `TestContext.generateUserData()` or faker helpers for unique values.
 14. **Ticket ID prefix in every `test()`.** Format: `test('TICKET-ID: should {behavior} when {condition}', ...)`. The `describe` block may also include the ticket ID when the file is tied to a single ticket.
 15. **One component per file, one file per feature.** Components follow `{Resource}Api.ts` or `{Page}Page.ts`. Test files follow `{verb}{Feature}.test.ts` (e.g., `applyDiscount.test.ts`, never `discount.test.ts`).
-16. **Don't propose components or ATCs without consulting the manifest.** `kata-manifest.json` is the registry. Skipping it produces (a) duplicate Pages — proposing `LoginPage` when `LoginPage.ts` already exists; (b) duplicate ATC IDs — minting `@atc('TC-90')` twice; (c) missed reuse — creating `getBookingById` when `BookingsApi.getById` already does it. Always start the Plan phase by loading the manifest. The husky pre-commit gate enforces freshness; Critical Rule #12 in `CLAUDE.md` enforces consultation.
+16. **Don't propose components or ATCs without consulting the manifest.** `kata-manifest.json` is the registry. Skipping it produces (a) duplicate Pages — proposing `LoginPage` when `LoginPage.ts` already exists; (b) duplicate ATC IDs — minting `@atc('PROJ-90')` twice; (c) missed reuse — creating `getBookingById` when `BookingsApi.getById` already does it. Always start the Plan phase by loading the manifest. The husky pre-commit gate enforces freshness; Critical Rule #12 in `CLAUDE.md` enforces consultation.
 17. **Cross-cutting test-architecture decisions become ADRs, not plan-buried prose.** When Plan or Code reveals a decision that is architectural AND hard to reverse — a fixture lifecycle reused across 3+ ATCs or 2+ tickets, a test-data-isolation contract, an auth-in-tests change, a flake-retry-policy shift, a Page-Object-vs-Screenplay move — promote it from `planning-playbook.md` §2 "Architecture Decisions" to a standalone `.context/ADR/ADR-NNNN-<slug>.md` and leave a `See ADR-NNNN` backlink. Ticket-local choices stay in the plan. ADRs are append-only: supersede, never rewrite. See `agentic-qa-core/references/adr-doctrine.md`.
 
 ---
@@ -318,7 +347,7 @@ export class LoginPage extends UiBase {
 import { test, expect } from '@TestFixture';
 import usersData from '@data/fixtures/users.json';
 
-test.describe('TICKET-ID: Apply Discount Code', () => {
+test.describe('TICKET-ID: Validate discount codes', () => {
   test('TICKET-ID: should apply percentage discount when code is valid', async ({ api }) => {
     const order = await api.orders.createOrderSuccessfully(orderData);
     const totals = await api.orders.getTotals({ orderId: order.id });

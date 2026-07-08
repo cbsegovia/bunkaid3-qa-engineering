@@ -158,6 +158,16 @@ required:
     description: Per-Test issue execution status (Jira-native TMS).
     used_by: [test-documentation]
 
+  qa_assignee:
+    name: QA Assignee
+    type: user
+    description: |
+      Single User Picker naming the QA who owns testing for an issue (self-assign).
+      Set when a Story is taken into testing (start_testing) and on every filed
+      Bug / Defect / Improvement. NEVER-OVERWRITE an existing owner (read-before-write);
+      distinct from the native dev `assignee`.
+    used_by: [sprint-testing, shift-left-testing]
+
 optional:
   # Fields that enhance the workflow but won't break it if missing.
   to_be_automated:
@@ -202,6 +212,20 @@ link_types:
       description: Links a Bug back to the Story it is blocking (QA formal block gate).
       used_by: [sprint-testing]
 
+    test_design:
+      name: Test Design
+      outward: designs
+      inward: is designed by
+      description: Links an ATP (Story) to its Test Case issues — ATP designs TC (test-documentation touchpoint).
+      used_by: [test-documentation]
+
+    test_execute:
+      name: Test Execute
+      outward: executes
+      inward: is executed by
+      description: Links an ATR (Story) to its Test Case issues — ATR executes TC (test-documentation touchpoint).
+      used_by: [test-documentation]
+
 # Issue types (`work_types`) plus the canonical statuses + transitions the
 # methodology requires per work type. Validated by `bun run jira:check` against
 # the catalog at `.agents/jira-workflows.json`. Status / transition slugs are
@@ -211,7 +235,7 @@ link_types:
 # discovered by the sync.
 work_types:
   story:
-    jira_issue_type: Historia
+    jira_issue_type: Story
     description: User story / feature work item
     required_statuses:
       backlog: { description: Initial state for a freshly created story }

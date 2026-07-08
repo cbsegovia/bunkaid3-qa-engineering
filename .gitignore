@@ -138,3 +138,6 @@ dbhub.local.toml
 # ===== Synced from boilerplate v7.0 =====
 # ----- 2026-05-28 (sync) -----
 **/evidence/
+
+# ----- 2026-06-25 (sync) -----
+.template/claude-md.upstream.sha

@@ -551,7 +551,7 @@ h4,.h4{font-size:22px;line-height:1.3;font-weight:600;margin:0 0 8px}
     <tbody>
       <tr><td><b>Por módulo</b></td><td>un módulo explorado de punta a punta</td><td>20-100+ escenarios</td><td>la mayoría serán Deferred</td></tr>
       <tr><td><b>Por ticket</b></td><td>una Story de usuario QA-Approved</td><td>3-8 escenarios</td><td>ATP/ATR creados por Story</td></tr>
-      <tr><td><b>Por bug</b></td><td>un bug cerrado con fix verificado</td><td>1-2 escenarios</td><td>sesgo HACIA ARRIBA → por defecto Candidate</td></tr>
+      <tr><td><b>Por bug</b></td><td>un bug cerrado con fix verificado</td><td>0-2 escenarios</td><td>sesgo HACIA ARRIBA; si es digno de regression → reutiliza-o-crea un Test</td></tr>
       <tr><td><b>Ad-hoc / Exploratorio</b></td><td>escenarios nuevos de exploración</td><td>1-10 escenarios</td><td>aplica los 3 filtros con dureza</td></tr>
     </tbody>
   </table>
@@ -590,6 +590,48 @@ h4,.h4{font-size:22px;line-height:1.3;font-weight:600;margin:0 0 8px}
   <div class="notes">Graba esto a fuego. Si la precondición y la acción son idénticas, es un solo test case sin importar cuántas cosas asseveres. Precondiciones distintas que producen resultados distintos — esos son TC distintos. Dividir "verifica el panel A / B / C" es el antipatrón más diagnosticado en las revisiones.</div>
 </section>
 
+<section class="slide" data-title="AC es el piso">
+  <p class="kicker">doctrina de diseño de pruebas — el principio central</p>
+  <h2 class="h2" data-anim="fade-up">Un mapa AC→TC es el <span class="grad">piso</span>, no la cobertura</h2>
+  <div class="grid g3 mt-l anim-stagger-list">
+    <div class="card card-accent"><h4>1 · Aprobar ≠ probar</h4><p class="dim">"Cada AC tiene un TC en verde" confirma el contrato. No prueba que el sistema sea robusto, seguro ni resistente al error.</p></div>
+    <div class="card card-accent"><h4>2 · Piso, no techo</h4><p class="dim">≥1 TC por AC es el mínimo, nunca la meta. La documentación de calidad supera la línea base del AC.</p></div>
+    <div class="card card-accent"><h4>3 · Criterio vs caso</h4><p class="dim">Un criterio es una afirmación de negocio. Un TC es una exploración concreta: precondición + acción + resultado verificable.</p></div>
+    <div class="card card-accent"><h4>4 · 1 : N por defecto</h4><p class="dim">Un AC → muchos TCs (particiones, límites, estados). Colapsar a uno solo con justificación escrita "trivialmente atómico".</p></div>
+    <div class="card card-accent"><h4>5 · El riesgo vive fuera</h4><p class="dim">Documenta los TCs de límite / negativos / estado / anomalía que el AC calla — ahí se esconden las regresiones.</p></div>
+    <div class="card"><h4>Tres capas, tres conteos</h4><p class="dim"><b>Deriva muchos, documenta pocos, automatiza menos.</b> <span class="grad">analizados 80 → documentados 12 → automatizados 8</span> — nunca "documentar los 80". ROI poda; el resto son Deferred, nunca borrados.</p></div>
+  </div>
+  <div class="notes">Canon: agentic-qa-core/references/test-design-doctrine.md. ROI es un filtro de automatización, no de derivación. La siguiente diapositiva hace explícita la regla de tres capas / derivar-amplio-documentar-estrecho.</div>
+</section>
+
+<section class="slide" data-title="Tres capas">
+  <p class="kicker">derivar amplio · documentar estrecho · automatizar menos</p>
+  <h2 class="h2" data-anim="fade-up">Tres capas, tres conteos — no uno</h2>
+  <div class="flow mt-m anim-stagger-list">
+    <div class="stage"><div class="sx">1</div><div><h4>DISEÑAR / derivar (1:N)</h4><p>En la planificación + exploración de sprint-testing: considera muchos casos por técnica. Vive en el análisis de priorización, <b>aún no en el TMS</b>.</p></div></div>
+    <div class="stage"><div class="sx">2</div><div><h4>DOCUMENTAR solo lo repetible</h4><p>Crea un TC persistente en el TMS <b>solo</b> para Candidate + Manual — escenarios que vale la pena reejecutar. <b>jira-native: Deferred NO se crea en el TMS</b> (solo reporte). jira-xray: "documentar 12" significa <b>promover 12</b> al Regression Test Plan, dejando el resto como artefactos de sprint sin promover.</p></div></div>
+    <div class="stage"><div class="sx">3</div><div><h4>AUTOMATIZAR los Candidates</h4><p>Solo los Candidates fluyen a <span class="mono">/test-automation</span>. Manual y Deferred son terminales.</p></div></div>
+  </div>
+  <div class="callout mt-m"><h4>La forma saludable</h4><p><span class="grad">analizados 80 → documentados 12 → automatizados 8</span>. Documentas un test porque será reejecutado — <b>nunca para alcanzar un conteo</b>. La mayoría de los escenarios son Deferred.</p></div>
+  <div class="notes">Esta es la columna vertebral de toda la disciplina. Derivar amplio es gratis; persistir está controlado por ROI. El mayor error de principiante es "documentar los 80" — tratar la documentación como un marcador de cobertura en vez de una inversión de protección de regression. En nativo, Deferred ni siquiera se vuelve un issue de Jira. En Xray los 80 ya pueden ser artefactos Test de sprint, así que "documentar 12" en realidad es "promover 12". Si la mayoría de los escenarios terminan en Candidate/Manual, reaplica la Fase 0 con más rigor.</div>
+</section>
+
+<section class="slide" data-title="Técnicas por disparador">
+  <p class="kicker">doctrina de diseño de pruebas — derivar por técnica</p>
+  <h2 class="h2" data-anim="fade-up">Un criterio → N TCs, elegidos por la <span class="grad">forma</span> del AC</h2>
+  <table class="dtable mt-l">
+    <thead><tr><th>Disparador en el AC</th><th>Técnica (obligatoria)</th><th>TCs que produce</th></tr></thead>
+    <tbody>
+      <tr><td>Cualquier input (siempre)</td><td><b>Particiones Equivalentes</b></td><td>mismo output → un TC parametrizado; output distinto → TCs separados</td></tr>
+      <tr><td>Un rango / límite / longitud / ventana de fecha</td><td><b>Valores Límite (BVA)</b></td><td>min-1·min·min+1 … max-1·max·max+1, cero / vacío / null</td></tr>
+      <tr><td>Un campo de estado / ciclo de vida</td><td><b>Transición de Estados</b></td><td>cada transición válida + cada transición inválida</td></tr>
+      <tr><td>2+ condiciones que interactúan</td><td><b>Tabla de Decisión</b></td><td>un TC por regla sobreviviente de la matriz</td></tr>
+      <tr><td>3+ factores combinables</td><td><b>Pairwise</b></td><td>conjunto all-pairs de TCs (registra la reducción)</td></tr>
+    </tbody>
+  </table>
+  <div class="notes">EP sin BVA se pierde el off-by-one. Los disparadores son obligatorios; ROI luego decide Candidate / Manual / Deferred por TC.</div>
+</section>
+
 <section class="slide" data-title="Validación de fuente">
   <p class="kicker">No confíes en el plan — lee el código</p>
   <h2 class="h2" data-anim="fade-up">La validación contra el código fuente es obligatoria</h2>
@@ -607,10 +649,10 @@ h4,.h4{font-size:22px;line-height:1.3;font-weight:600;margin:0 0 8px}
   <p class="kicker">Nomenclatura + particionamiento</p>
   <h2 class="h2" data-anim="fade-up">Nombra un TC para que cualquiera lo encuentre</h2>
   <ul class="blist mt-l anim-stagger-list">
-    <li><b>El formato que importa.</b> <span class="mono">{US_ID or TS_ID}: TC#: Validate &lt;CORE&gt; &lt;CONDITIONAL&gt;</span></li>
-    <li><b>CORE.</b> verbo + objeto: <span class="mono">successful login</span>, <span class="mono">authentication error</span>, <span class="mono">order creation</span>.</li>
-    <li><b>CONDITIONAL.</b> la condición que lo distingue: <span class="mono">with valid credentials</span>, <span class="mono">when password is incorrect</span>.</li>
-    <li><b>Ejemplo resuelto.</b> <span class="mono">GX-101: TC2: Validate authentication error when password is incorrect</span>.</li>
+    <li><b>El formato que importa.</b> <span class="mono">{US_ID}: TC#: should &lt;outcome&gt; when &lt;condition&gt;</span></li>
+    <li><b>CORE — resultado esperado.</b> verbo + objeto tras <span class="mono">should</span>: <span class="mono">grant access</span>, <span class="mono">reject login</span>, <span class="mono">cap input length</span>.</li>
+    <li><b>CONDITIONAL.</b> la cláusula conectora opcional: <span class="mono">when credentials are valid</span>, <span class="mono">if password is incorrect</span>, opcional <span class="mono">given &lt;precondition&gt;</span>.</li>
+    <li><b>Ejemplo resuelto.</b> <span class="mono">GX-101: TC2: should show auth error when password is incorrect</span>.</li>
     <li><b>Rechaza estos.</b> <span class="mono">Login test</span> · <span class="mono">Login - error</span> · <span class="mono">TC1: Test form</span> · <span class="mono">Should work correctly</span>.</li>
   </ul>
   <div class="notes">Un buen nombre es buscable, único y autoexplicativo. Particionamiento por equivalencia: misma salida → un TC parametrizado (Scenario Outline + Examples); distinta salida → TC separados. Los antipatrones son títulos reales que la gente entrega — vagos e inútiles seis meses después.</div>
@@ -679,11 +721,36 @@ h4,.h4{font-size:22px;line-height:1.3;font-weight:600;margin:0 0 8px}
     <tbody>
       <tr><td><b>Candidate</b></td><td>ROI &gt; 3.0, O (1.5-3.0 Y bug previo), O happy path crítico</td><td>alimenta /test-automation</td><td>Draft→In Design→Ready→In Review→Candidate</td></tr>
       <tr><td><b>Manual</b></td><td>ROI 0.5-1.5 Y no automatizable, o explícitamente solo-manual</td><td>suite de regression manual</td><td>Draft→In Design→Ready→Manual</td></tr>
-      <tr><td><b>Deferred</b></td><td>ROI &lt; 0.5, O falló Fase 0, O validación de una sola vez</td><td>NO va a regression</td><td>sin TC — en el reporte</td></tr>
+      <tr><td><b>Deferred</b></td><td>ROI &lt; 0.5, O falló Fase 0, O validación de una sola vez</td><td>NO va a regression</td><td>nativo: sin TC — solo reporte · xray: el Test de sprint queda sin promover</td></tr>
     </tbody>
   </table>
-  <div class="callout warn mt-m"><h4>No hay un cuarto bucket</h4><p>Si &gt;50% aterriza en Candidate/Manual, reaplica la Fase 0 con más rigor.</p></div>
-  <div class="notes">Tres buckets, sin excepciones. Deferred ni siquiera crea un issue en el TMS — solo documentas la decisión. Si demasiado está sobreviviendo, tu filtro es demasiado suave.</div>
+  <div class="callout warn mt-m"><h4>No hay un cuarto bucket</h4><p>Si &gt;50% aterriza en Candidate/Manual, reaplica la Fase 0 con más rigor. La mayoría de los escenarios deberían ser Deferred.</p></div>
+  <div class="notes">Tres buckets, sin excepciones. En jira-native, Deferred ni siquiera crea un issue en el TMS — solo documentas la decisión en el reporte de priorización. En jira-xray el Test de sprint ya existe desde la Etapa 1 de sprint-testing, así que Deferred ahí significa que queda como artefacto de sprint sin promover, no borrado. Si demasiado está sobreviviendo, tu filtro es demasiado suave.</div>
+</section>
+
+<section class="slide" data-title="El verbo, no el veredicto">
+  <p class="kicker">Mismo veredicto, distinta acción</p>
+  <h2 class="h2" data-anim="fade-up">La modalidad cambia el <span class="grad">verbo</span>, no el veredicto</h2>
+  <p class="lede mt-s">El resultado de ROI (Candidate / Manual / Deferred) es idéntico en ambos mundos. Lo que cambia es lo que la Fase 3 <b>hace</b> con él.</p>
+  <div class="vs mt-l">
+    <div class="card side"><h3>jira-native — CREAR</h3><ul><li>Aún no existen Tests de sprint</li><li>La Fase 3 <b>crea</b> un work item <span class="mono">Test</span> solo para Candidate + Manual</li><li>Deferred = <b>solo reporte</b>, no se crea issue</li><li>El mismo pipeline Analizar→Priorizar→Documentar</li></ul></div>
+    <div class="mid">vs</div>
+    <div class="card side"><h3>jira-xray — PROMOVER + ENRIQUECER</h3><ul><li>Los <span class="mono">Test</span> ya existen desde la Etapa 1 de sprint-testing</li><li>La Fase 3 <b>selecciona + promueve</b> los dignos de regression al Regression Test Plan + Test Set</li><li>y los <b>enriquece</b> (Gherkin rico, parametrización, casos límite)</li><li>Los Tests de sprint Deferred quedan sin promover, no borrados</li></ul></div>
+  </div>
+  <div class="notes">Este es el matiz que más se pasa por alto. La aritmética del veredicto es compartida; el verbo es específico de la modalidad. En nativo, escribes los Tests desde cero para los sobrevivientes. En Xray los sobrevivientes ya nacieron como artefactos Test de sprint en la Etapa 1 — tu trabajo es elegir los dignos de regression, agregarlos al Regression Test Plan y al Test Set de la feature, etiquetarlos como regression-candidate, y especificarlos mucho más a fondo. Deferred nunca es un borrado en ninguno de los dos mundos.</div>
+</section>
+
+<section class="slide" data-title="Regla de oro del bug">
+  <p class="kicker">Por bug — la regla que vale oro</p>
+  <h2 class="h2" data-anim="fade-up">Un bug digno de regression DEBE terminar con un <span class="grad">Test</span></h2>
+  <p class="lede mt-s">No todo bug se vuelve un TC de regression — pero si lo hace, debe terminar con un Test. <b>Reutiliza</b> el Test fallido existente si el bug vino de uno; si no, <b>crea</b> uno. Ambas modalidades.</p>
+  <div class="vs mt-l">
+    <div class="card bad-side side"><h3>❌ NO califica → Deferred</h3><ul><li>typo de una sola vez en un área estable</li><li>tratado como un test fallido — el fix ya fue verificado en sprint-testing</li><li><b>sin Test nuevo</b>, regístralo como Deferred</li></ul></div>
+    <div class="mid">→</div>
+    <div class="card good-side side"><h3>✓ Digno de regression → debe tener un Test</h3><ul><li>vino de un Test fallido existente → <b>REUTILÍZALO</b>, enlaza + promueve, nunca dupliques</li><li>sin Test previo → <b>CREA</b> + diseña uno</li><li>enlaza vía <span class="mono">tests / is tested by</span></li></ul></div>
+  </div>
+  <div class="callout warn mt-m"><h4>Anula "el bug es el test case"</h4><p>Esa frase de sprint-testing cubre solo el retest inmediato dentro del sprint — NO la regression futura. Esta regla decide si debe existir un Test <i>persistente</i> para que el bug nunca pueda regresar en silencio.</p></div>
+  <div class="notes">Regla de oro: donde existe un bug importante, un test debe atraparlo de nuevo. Un bug cerrado es prueba empírica fuerte de que el área regresa, así que la mayoría califica y se inclina a Candidate — pero no todos. El árbol de decisión: ¿candidato de regression? No → trátalo como un test fallido, Deferred, listo. Sí → ¿vino de un Test ejecutado existente? Reutiliza ese. ¿Sin Test previo? Crea y diseña uno. Nunca reabras un bug cerrado para adjuntar el TC — crea un TC nuevo y enlázalo.</div>
 </section>
 
 <section class="slide divider" data-title="Fase 3">
@@ -699,19 +766,32 @@ h4,.h4{font-size:22px;line-height:1.3;font-weight:600;margin:0 0 8px}
   <p class="kicker">Las cuatro entidades + el Regression Epic</p>
   <h2 class="h2" data-anim="fade-up">Preflight, luego construye el modelo de entidades</h2>
   <div class="flow mt-m anim-stagger-list">
-    <div class="stage"><div class="sx">0</div><div><h4>Encuentra el Regression Epic</h4><p>Busca <span class="mono">type = Epic AND labels = "test-repository"</span>; si no hay, pregunta antes de crear <span class="mono">{{PROJECT_KEY}} Test Repository</span>. Todo TC necesita este padre.</p></div></div>
+    <div class="stage"><div class="sx">0</div><div><h4>Encuentra el Regression Epic</h4><p>Busca <span class="mono">type = Epic AND summary ~ "QA Test Repository"</span>; si no hay, pregunta antes de crear <span class="mono">QA Test Repository</span>. Todo TC necesita este padre.</p></div></div>
     <div class="stage"><div class="sx">US</div><div><h4>Story</h4><p>El requisito (preexistente), <span class="mono">{{PROJECT_KEY}}-{n}</span>.</p></div></div>
-    <div class="stage"><div class="sx">ATP</div><div><h4>Acceptance Test Plan</h4><p><span class="mono">Test Plan: {{PROJECT_KEY}}-{n}</span> — Test Analysis + cobertura AC→TC.</p></div></div>
-    <div class="stage"><div class="sx">ATR</div><div><h4>Acceptance Test Results</h4><p><span class="mono">Test Results: {{PROJECT_KEY}}-{n}</span> — Test Report + resultados de ejecución.</p></div></div>
-    <div class="stage"><div class="sx">TC</div><div><h4>Test Case</h4><p><span class="mono">{US_ID}: TC#: Validate &lt;CORE&gt; &lt;CONDITIONAL&gt;</span> — Precondición + Acción + Esperado.</p></div></div>
+    <div class="stage"><div class="sx">ATP</div><div><h4>Acceptance Test Plan</h4><p><span class="mono">ATP: {{PROJECT_KEY}}-{n}: {story title}</span> — Test Analysis + cobertura AC→TC.</p></div></div>
+    <div class="stage"><div class="sx">ATR</div><div><h4>Acceptance Test Results</h4><p><span class="mono">ATR: {{PROJECT_KEY}}-{n}: Story Testing</span> — Test Report + resultados de ejecución.</p></div></div>
+    <div class="stage"><div class="sx">TC</div><div><h4>Test Case</h4><p><span class="mono">{US_ID}: TC#: should &lt;outcome&gt; when &lt;condition&gt;</span> — Precondición + Acción + Esperado.</p></div></div>
+    <div class="stage"><div class="sx">TS</div><div><h4>Test Set <span class="tag">solo xray</span></h4><p><span class="mono">Test Set: &lt;EPIC_KEY&gt; &lt;feature&gt;</span> — agrupación por feature (1:1 con el Epic) de los Tests de regression promovidos. Nativo: reemplazado por un label de feature/Epic, sin entidad.</p></div></div>
   </div>
-  <div class="notes">Cuatro entidades, un hogar permanente. El Regression Epic es el único repositorio de tests de todo el proyecto — nunca dejes un TC huérfano fuera de él.</div>
+  <div class="notes">Las cuatro entidades core tienen un hogar permanente en el Regression Epic — nunca dejes un TC huérfano fuera de él. El Test Set es un organizador a nivel de feature solo de Xray; la siguiente diapositiva separa los tres contenedores que la gente tiende a confundir.</div>
+</section>
+
+<section class="slide" data-title="Tres contenedores">
+  <p class="kicker">No confundas los tres contenedores</p>
+  <h2 class="h2" data-anim="fade-up">Epic · Test Set · Test Plan — tres cosas distintas</h2>
+  <div class="grid g3 mt-l anim-stagger-list">
+    <div class="card card-accent"><h4>Regression Epic</h4><p class="dim">El <b>paraguas del repositorio</b> — uno por proyecto. Todo TC documentado vive bajo él. <span class="mono">type=Epic, labels=test-repository</span>.</p><span class="tag mt-s">paraguas</span></div>
+    <div class="card card-accent"><h4>Test Set <span class="tag">solo xray</span></h4><p class="dim"><b>Agrupación por feature</b>, 1:1 con el Epic/feature. Contiene los Tests de regression promovidos de UNA feature. Equivalente nativo = Regression Epic + un label de feature/Epic.</p><span class="tag mt-s">feature</span></div>
+    <div class="card card-accent"><h4>Test Plan</h4><p class="dim"><b>Alcance de ejecución / regression</b> — el conjunto de Tests corridos para un release o ciclo de regression. El ATP en jira-xray es un issue Test Plan.</p><span class="tag mt-s">ejecución</span></div>
+  </div>
+  <div class="callout mt-m"><h4>Auto-crea el Test Set de forma perezosa (pregunta primero)</h4><p>jira-xray: si el Test Set de la feature falta cuando una promoción lo necesita, la IA lo crea de forma perezosa en la Etapa 4 — <b>pregunta al usuario primero</b>, espejando la regla de preguntar-antes-de-crear del Regression Epic. Solo se agregan los Tests Candidate/Manual <b>promovidos</b>; los Tests de sprint Deferred no.</p></div>
+  <div class="notes">La gente fusiona estos rutinariamente. El Epic es todo el repositorio. Un Test Set agrupa los Tests de regression de una feature, uno-a-uno con el Epic de la feature. Un Test Plan es un alcance de ejecución. En jira-native no existe la entidad Test Set en absoluto — logras la misma agrupación con el Regression Epic más un label de feature/Epic en cada TC. La IA solo crea el Test Set de forma perezosa, cuando una promoción realmente lo necesita, y siempre pregunta antes de crear.</div>
 </section>
 
 <section class="slide" data-title="Orden de enlazado">
   <p class="kicker">El orden no es opcional</p>
   <h2 class="h2" data-anim="fade-up">ATP → ATR → enlazar → LUEGO cada TC</h2>
-  <div class="callout mt-l"><h4>Orden de enlazado</h4><p>(1) Crea ATP, enlaza a US. (2) Crea ATR, enlaza a US. (3) Actualiza ATP, enlaza a ATR (bidireccional). (4) Por cada TC: créalo, luego enlázalo a US + ATP + ATR + AC.</p></div>
+  <div class="callout mt-l"><h4>Orden de enlazado</h4><p>(1) Crea ATP, enlaza a US. (2) Crea ATR, enlaza a US. (3) Actualiza ATP, enlaza a ATR (bidireccional). (4) Por cada TC: créalo, luego enlázalo a US + ATP + ATR + AC. (5) Por cada TC <b>promovido</b> — xray: agrégalo al Test Set de la feature + al Regression Test Plan + label <span class="mono">regression-candidate</span>; nativo: aplica el label de feature/Epic (sin entidad Test Set).</p></div>
   <p class="lede mt-m">Para cuando se crea un TC, tanto ATP como ATR ya existen, así que los tres enlaces aterrizan en la creación. Crea los TC primero y obtienes huérfanos — y <span class="mono">fix-traceability</span> se vuelve la única salida. El modelo es bidireccional: <b class="grad">US↔ATP↔ATR↔TC</b>. Dado cualquiera, debes alcanzar los otros tres — ESO es trazabilidad.</p>
   <div class="notes">Este es el orden que la gente rompe bajo presión de deadline. Plan y resultados primero, luego los tests. La cardinalidad también importa: US↔ATP y US↔ATR son 1:1; un ATR nunca se enlaza a dos ATP.</div>
 </section>
@@ -722,7 +802,7 @@ h4,.h4{font-size:22px;line-height:1.3;font-weight:600;margin:0 0 8px}
   <div class="terminal mt-m">
     <div class="bar"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span>TC-GX-101.feature</span></div>
 <pre><span class="cmt">@critical @regression @automation-candidate @GX-101</span>
-<span class="kw">Scenario Outline:</span> Validate authentication error when password is incorrect
+<span class="kw">Scenario Outline:</span> should show auth error when password is incorrect
   <span class="cmt">"""</span>
   <span class="cmt">Bugs covered: GX-202   Related Story: GX-101   ROI Score: 4.0</span>
   <span class="cmt">"""</span>
@@ -826,8 +906,8 @@ h4,.h4{font-size:22px;line-height:1.3;font-weight:600;margin:0 0 8px}
 <span class="o">[Phase 2]  Filter: prior bug = YES. ROI = (4×5×4)/(2×1) = 40.</span>
 <span class="o">           Verdict: CANDIDATE (bug-driven defaults to Candidate).</span>
 <span class="o">[Phase 3]  Regression Epic UPEX-9 found. Creating 1 TC inline...</span>
-<span class="o">             UPEX-540 "UPEX-101: TC2: Validate authentication</span>
-<span class="o">             error when password is incorrect" [automation-candidate]</span>
+<span class="o">             UPEX-540 "UPEX-101: TC2: should show auth error</span>
+<span class="o">             when password is incorrect" [automation-candidate]</span>
 <span class="o">           Linked: is tested by → UPEX-101. Cached locally.</span>
 <span class="o">  Plan ready: create UPEX-540, transition to Candidate. Proceed?</span>
 <span class="p">&gt; </span><span class="c">y</span>
@@ -857,6 +937,15 @@ h4,.h4{font-size:22px;line-height:1.3;font-weight:600;margin:0 0 8px}
 </section>
 
 </div>
+<!-- keyboard-nav hint (ported from defect-management deck) -->
+<div id="help-hint">← → navegar · O resumen · S presentador · N notas · F pantalla</div>
+<style id="upex-hint-style">
+#help-hint{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:60;pointer-events:none;
+  font-family:'JetBrains Mono','IBM Plex Mono',monospace;font-size:11px;letter-spacing:.04em;color:var(--text-3)}
+@media (max-width:768px){#help-hint{display:none}}
+@media (pointer:coarse){#help-hint{display:none}}
+@media print{#help-hint{display:none!important}}
+</style>
 <script>
 /* html-ppt :: runtime.js
  * Keyboard-driven deck runtime. Zero dependencies.
@@ -1164,7 +1253,7 @@ h4,.h4{font-size:22px;line-height:1.3;font-weight:600;margin:0 0 8px}
     /* Opens a new window with 4 draggable, resizable cards:
      *   CURRENT  — iframe(?preview=N)   pixel-perfect preview of current slide
      *   NEXT     — iframe(?preview=N+1) pixel-perfect preview of next slide
-     *   SCRIPT   — large speaker notes (逐字稿)
+     *   SCRIPT   — large speaker notes (Guion)
      *   TIMER    — elapsed timer + page counter + controls
      * Cards remember position/size in localStorage.
      * Two windows sync via BroadcastChannel.
@@ -1196,7 +1285,7 @@ h4,.h4{font-size:22px;line-height:1.3;font-weight:600;margin:0 0 8px}
 
       presenterWin = window.open('', 'html-ppt-presenter', 'width=1280,height=820,menubar=no,toolbar=no');
       if (!presenterWin) {
-        alert('请允许弹出窗口以使用演讲者视图');
+        alert('Permite las ventanas emergentes para usar la vista de presentador');
         return;
       }
       presenterWin.document.open();
@@ -1399,7 +1488,7 @@ h4,.h4{font-size:22px;line-height:1.3;font-weight:600;margin:0 0 8px}
   <div class="pcard pcard-notes" id="card-notes" style="--dot-color:#f0883e">
     <div class="pcard-head" data-drag>
       <span class="pcard-dot"></span>
-      <span class="pcard-title">SPEAKER SCRIPT · 逐字稿</span>
+      <span class="pcard-title">SPEAKER SCRIPT · Guion</span>
     </div>
     <div class="pcard-body" id="notes-body"></div>
     <div class="pcard-resize" data-resize></div>
@@ -1427,11 +1516,11 @@ h4,.h4{font-size:22px;line-height:1.3;font-weight:600;margin:0 0 8px}
 </div>
 
 <div class="hint-bar">
-  <span><kbd>← →</kbd> 翻页</span>
-  <span><kbd>R</kbd> 重置计时</span>
-  <span><kbd>Esc</kbd> 关闭</span>
-  <span style="color:#6e7681">拖动卡片头部移动 · 拖动右下角调整大小</span>
-  <button class="reset-layout" id="reset-layout">重置布局</button>
+  <span><kbd>← →</kbd> Pasar diapositiva</span>
+  <span><kbd>R</kbd> Reiniciar tiempo</span>
+  <span><kbd>Esc</kbd> Cerrar</span>
+  <span style="color:#6e7681">Arrastra el encabezado para mover · Arrastra la esquina inferior derecha para redimensionar</span>
+  <button class="reset-layout" id="reset-layout">Reiniciar disposición</button>
 </div>
 
 <script>
@@ -1647,7 +1736,7 @@ h4,.h4{font-size:22px;line-height:1.3;font-weight:600;margin:0 0 8px}
 
     /* Notes */
     var note = slideMeta[n].notes;
-    notesBody.innerHTML = note || '<span class="empty">（这一页还没有逐字稿）</span>';
+    notesBody.innerHTML = note || '<span class="empty">(Esta diapositiva aún no tiene guion)</span>';
 
     /* Timer count */
     timerCount.textContent = (n + 1) + ' / ' + total;
@@ -1689,7 +1778,7 @@ h4,.h4{font-size:22px;line-height:1.3;font-weight:600;margin:0 0 8px}
   document.getElementById('btn-next').addEventListener('click', function(){ go(idx + 1); });
   document.getElementById('btn-reset').addEventListener('click', resetTimer);
   document.getElementById('reset-layout').addEventListener('click', function(){
-    if (confirm('恢复默认卡片布局？')) {
+    if (confirm('¿Restaurar la disposición por defecto?')) {
       try { localStorage.removeItem(STORAGE_KEY); } catch(e){}
       applyLayout(defaultLayout());
     }
@@ -1721,7 +1810,7 @@ h4,.h4{font-size:22px;line-height:1.3;font-weight:600;margin:0 0 8px}
   iframeCur.src = deckUrl + '?preview=' + (idx + 1);
   if (idx + 1 < total) iframeNxt.src = deckUrl + '?preview=' + (idx + 2);
   /* Initialize notes/timer/count without touching iframes */
-  notesBody.innerHTML = slideMeta[idx].notes || '<span class="empty">（这一页还没有逐字稿）</span>';
+  notesBody.innerHTML = slideMeta[idx].notes || '<span class="empty">(Esta diapositiva aún no tiene guion)</span>';
   curMeta.textContent = (idx + 1) + '/' + total;
   nxtMeta.textContent = (idx + 2) + '/' + total;
   timerCount.textContent = (idx + 1) + ' / ' + total;
@@ -1820,4 +1909,87 @@ h4,.h4{font-size:22px;line-height:1.3;font-weight:600;margin:0 0 8px}
 })();
 
 </script>
+
+<script>
+/* deck :: mobile scale-to-fit — fixed 16:9 layout scaled into narrow/short viewports.
+   Desktop (vw>=1024 && vh>=640) is left untouched (native fluid). Preview iframes skipped. */
+(function(){
+  try{
+    if (new URLSearchParams(location.search).has('preview')) return;
+    var BASE_W = 1280, BASE_H = 720;
+    var deck = document.querySelector('.deck');
+    if (!deck) return;
+    function fit(){
+      var vw = window.innerWidth, vh = window.innerHeight;
+      if (vw >= 1024 && vh >= 640){
+        deck.style.transform = '';
+        deck.style.width = ''; deck.style.height = '';
+        deck.style.position = ''; deck.style.left = ''; deck.style.top = '';
+        document.documentElement.style.overflow = ''; document.body.style.overflow = '';
+        document.documentElement.style.background = '';
+        return;
+      }
+      var scale = Math.min(vw / BASE_W, vh / BASE_H);
+      deck.style.width = BASE_W + 'px';
+      deck.style.height = BASE_H + 'px';
+      deck.style.transformOrigin = 'top left';
+      deck.style.transform = 'scale(' + scale + ')';
+      deck.style.position = 'absolute';
+      deck.style.left = ((vw - BASE_W * scale) / 2) + 'px';
+      deck.style.top = ((vh - BASE_H * scale) / 2) + 'px';
+      document.documentElement.style.overflow = 'hidden';
+      document.body.style.overflow = 'hidden';
+      document.documentElement.style.background = (function(){var d=getComputedStyle(deck).backgroundColor;if(d&&d!=='rgba(0, 0, 0, 0)'&&d!=='transparent')return d;var b=getComputedStyle(document.body).backgroundColor;return (b&&b!=='rgba(0, 0, 0, 0)'&&b!=='transparent')?b:'#0d1117';})();
+    }
+    fit();
+    window.addEventListener('resize', fit);
+    window.addEventListener('orientationchange', function(){ setTimeout(fit, 60); });
+  }catch(e){ /* never break the deck over a fit error */ }
+})();
+</script>
+
+<!-- ============ MOBILE NAV (UPEX) — swipe → flechas + hint once-only. scale-to-fit vive en el deck fuente ============ -->
+<style id="upex-navhint-style">
+#upex-navhint{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);z-index:120;
+  display:flex;align-items:center;gap:.4rem;background:rgba(20,22,34,.94);
+  border:1px solid rgba(255,255,255,.18);border-radius:999px;
+  padding:.5rem .95rem;font:600 13px/1.2 system-ui,-apple-system,sans-serif;color:#c0caf5;
+  box-shadow:0 6px 20px rgba(0,0,0,.45);animation:upexHintIn .35s ease both;cursor:pointer}
+@keyframes upexHintIn{from{opacity:0;transform:translateX(-50%) translateY(10px)}to{opacity:1;transform:translateX(-50%)}}
+#upex-navhint.out{opacity:0;transition:opacity .4s}
+</style>
+<script id="upex-mobile-nav">
+(function(){
+'use strict';
+/* Navegación por swipe: el runtime del deck escucha keydown ArrowLeft/Right. */
+var send=function(key){document.dispatchEvent(new KeyboardEvent('keydown',{key:key,bubbles:true}))};
+var x0=null,y0=null,skip=false;
+document.addEventListener('touchstart',function(e){
+  var t=e.target;
+  skip=!!(t&&t.closest&&t.closest('textarea,input,button,pre,table,a,.quiz'));
+  var p=e.changedTouches[0]; x0=p.clientX; y0=p.clientY;
+},{passive:true});
+document.addEventListener('touchend',function(e){
+  if(x0===null||skip) return;
+  var p=e.changedTouches[0], dx=p.clientX-x0, dy=p.clientY-y0;
+  x0=y0=null;
+  if(Math.abs(dx)>60&&Math.abs(dx)>2*Math.abs(dy)) send(dx<0?'ArrowRight':'ArrowLeft');
+},{passive:true});
+/* Hint de navegación: solo móvil (chrome del deck oculto por scale-to-fit),
+   una sola vez por dominio (localStorage). ?hint=1 lo fuerza para QA. */
+var KEY='upex-deck-navhint-v1';
+var isMobile=matchMedia('(pointer:coarse)').matches&&matchMedia('(max-width:768px)').matches;
+var force=/[?&]hint=1/.test(location.search);
+var seen=false; try{seen=localStorage.getItem(KEY)==='1'}catch(_e){}
+if(force||(isMobile&&!seen)){
+  var h=document.createElement('div'); h.id='upex-navhint';
+  h.textContent='👆 Desliza para avanzar →';
+  var close=function(){ if(!h.isConnected)return; h.classList.add('out'); setTimeout(function(){h.remove();},400); try{localStorage.setItem(KEY,'1')}catch(_e){} };
+  h.addEventListener('click',close);
+  document.body.appendChild(h);
+  setTimeout(close,5000);
+}
+})();
+</script>
+
 </body></html>

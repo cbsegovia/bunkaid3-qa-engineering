@@ -18,7 +18,9 @@ Branch by ticket type:
    User Story                  Bug
    ----------                  ---
    Stage 1 Planning            Phase 1 Triage + Planning
-   (ATP + ATR + TCs)           (veto / risk score, ATP + ATR, no TCs)
+   (ATP+ATR; outlines native    (veto / risk score, ATP + ATR,
+    / Xray Tests; regression     no TCs in-sprint; regression Test
+    TCs persisted in Stage 4)    reused/created in Stage 4 if worthy)
    Stage 2 Execution           Phase 2 Execution
    (smoke + UI/API/DB)         (reproduce -> verify fix -> regression)
    Stage 3 Reporting           Phase 3 Reporting
@@ -331,7 +333,7 @@ Output checkpoint:
 ```markdown
 ## Stage 1 Complete
 - [ ] ATP created with N scenarios
-- [ ] TC nomenclature `{US_ID}: TC#: Validate <CORE> <CONDITIONAL>` applied
+- [ ] TC nomenclature `{US_ID}: TC#: should <expected outcome> [<connector> <condition>] [given <precondition>]` applied
 - [ ] Variables + test data identified
 - [ ] Traceability verified
 - [ ] Ready for execution testing
@@ -402,9 +404,9 @@ Output checkpoint:
 ```
 USER STORY ({{PROJECT_KEY}}-XXX)
     |
-    +--> ATP (Test Plan: {{PROJECT_KEY}}-XXX)
+    +--> ATP (ATP: {STORY-KEY}: {story title})
     |        |
-    |        +--> ATR (Test Results: {{PROJECT_KEY}}-XXX)
+    |        +--> ATR (ATR: {STORY-KEY}: Story Testing)
     |                 |
     +--> TCs ---------+
          (linked to Story + ATP + ATR)
@@ -517,15 +519,15 @@ If triage is Code Review, skip Phases 2-3:
    ```
 4. Post via `[ISSUE_TRACKER_TOOL]`. END of Code Review workflow.
 
-#### Step 1.5 — Create ATP + ATR (no TCs)
+#### Step 1.5 — Create ATP + ATR (no TCs in-sprint)
 
 For bugs that need Full Retesting:
 
-- ATP: "Test Plan: {{PROJECT_KEY}}-{number}"
-- ATR: "Test Results: {{PROJECT_KEY}}-{number}"
+- ATP: "ATP: {STORY-KEY}: {story title}"
+- ATR: "ATR: {STORY-KEY}: Story Testing"
 - Link ATP to ATR
 
-Why no TCs: the bug ticket is the implicit test case. Reproduction steps = test steps. Expected vs Actual = pass/fail criteria.
+Why no TCs in-sprint: the bug ticket is the implicit *immediate* retest case. Reproduction steps = test steps. Expected vs Actual = pass/fail criteria. **Regression follow-up (golden rule)**: if the bug is regression-worthy, Stage 4 (`test-documentation` bug-driven decision) ensures a persistent Test covers it — reuse the existing failed Test or create one. Not every bug qualifies (a one-time typo in a stable area is treated like a failed test).
 
 #### Step 1.6 — Discover test data
 

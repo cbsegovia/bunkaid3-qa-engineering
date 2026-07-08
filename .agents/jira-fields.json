@@ -10,12 +10,12 @@
     "name": "🧪 Acceptance Test Plan (ATP)"
   },
   "acceptance_test_results": {
-    "id": "customfield_10284",
+    "id": "customfield_10147",
     "type": "string",
     "name": "🧪 Acceptance Test Results (ATR)"
   },
   "actual_result": {
-    "id": "customfield_10133",
+    "id": "customfield_10056",
     "type": "string",
     "name": "🐞 Actual Result (Comportamiento)"
   },
@@ -76,7 +76,7 @@
     "name": "DESCRIPCIÓN DEL BUG"
   },
   "end_date": {
-    "id": "customfield_10102",
+    "id": "customfield_10044",
     "type": "datetime",
     "name": "End Date"
   },
@@ -114,27 +114,27 @@
     "provider": "com.pyxis.greenhopper.jira"
   },
   "error_type": {
-    "id": "customfield_10190",
+    "id": "customfield_10141",
     "type": "option",
     "name": "Error Type",
     "options": {
-      "content": "10118",
-      "crash": "10120",
-      "data": "10121",
-      "functional": "10116",
-      "integration": "10122",
-      "performance": "10119",
-      "security": "10123",
-      "visual": "10117"
+      "functional": "10164",
+      "visual": "10165",
+      "content": "10166",
+      "performance": "10167",
+      "crash": "10168",
+      "data": "10169",
+      "integration": "10170",
+      "security": "10171"
     }
   },
   "evidence": {
-    "id": "customfield_10140",
+    "id": "customfield_10061",
     "type": "string",
     "name": "🧫EVIDENCE"
   },
   "expected_result": {
-    "id": "customfield_10137",
+    "id": "customfield_10059",
     "type": "string",
     "name": "✅ Expected Result (Output)"
   },
@@ -149,12 +149,12 @@
     "name": "🧪 Feature Test Plan (QA)"
   },
   "fix": {
-    "id": "customfield_10114",
+    "id": "customfield_10107",
     "type": "option",
     "name": "Fix",
     "options": {
-      "bugfix": "10267",
-      "hotfix": "10266"
+      "bugfix": "10043",
+      "hotfix": "10042"
     }
   },
   "flagged": {
@@ -318,22 +318,22 @@
     "name": "Revision"
   },
   "root_cause": {
-    "id": "customfield_10118",
+    "id": "customfield_10109",
     "type": "option",
-    "name": "Root Cause🐞",
+    "name": "Causa Raíz🐞",
     "options": {
-      "code_error": "10233",
-      "config_env_error": "10234",
-      "data_error": "10240",
-      "environment_error": "10235",
-      "integration_error": "10239",
-      "requirement_error": "10236",
-      "third_party_error": "10238",
-      "working_as_designed": "10237"
+      "code_error": "10146",
+      "config_env_error": "10147",
+      "environment_error": "10148",
+      "requirement_error": "10149",
+      "working_as_designed": "10150",
+      "third_party_error": "10151",
+      "integration_error": "10152",
+      "data_error": "10153"
     }
   },
   "scenario": {
-    "id": "customfield_10147",
+    "id": "customfield_10066",
     "type": "option",
     "name": "SCENARIO",
     "options": {
@@ -347,15 +347,15 @@
     "name": "Scope ⛳"
   },
   "severity": {
-    "id": "customfield_10177",
+    "id": "customfield_10143",
     "type": "option",
     "name": "Severity 🚩",
     "options": {
-      "critica": "10188",
-      "mayor": "10189",
-      "menor": "10191",
-      "moderada": "10190",
-      "trivial": "10192"
+      "critica": "10025",
+      "mayor": "10026",
+      "moderada": "10027",
+      "menor": "10028",
+      "trivial": "10029"
     }
   },
   "source": {
@@ -459,15 +459,15 @@
     "name": "Test Design 🧪"
   },
   "test_environment": {
-    "id": "customfield_10136",
+    "id": "customfield_10057",
     "type": "option",
     "name": "Test Environment 📦️",
     "options": {
-      "dev": "10241",
-      "production": "10245",
-      "qa": "10242",
-      "staging": "10244",
-      "uat": "10243"
+      "dev": "10044",
+      "qa": "10045",
+      "uat": "10046",
+      "staging": "10047",
+      "production": "10048"
     }
   },
   "test_outline": {
@@ -543,7 +543,7 @@
     "name": "Weblink (URL)"
   },
   "workaround": {
-    "id": "customfield_10109",
+    "id": "customfield_10102",
     "type": "string",
     "name": "🚩 Workaround"
   },

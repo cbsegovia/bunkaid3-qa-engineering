@@ -63,12 +63,27 @@ Rule: a component in a higher layer may use a lower layer, never the other way r
     /steps
       AuthSteps.ts              # Layer 3.5
 
-  /data/fixtures                # JSON/CSV test data
+  /data
+    DataFactory.ts              # Typed faker-backed factories
+    types.ts                    # Payload / domain TypeScript types
+    constants.ts                # Static test values, boundaries
+    /fixtures                   # Static JSON/CSV rows
+    /mocks                      # Canned mock/stub responses
   /integration/{module}         # API-only tests
   /e2e/{module}                 # UI (+API) tests
   /utils
     decorators.ts               # @atc, @step
 ```
+
+`tests/data/` canonical TypeScript files (naming is fixed; create only when the scope needs them):
+
+| File | Holds | Example members |
+|------|-------|-----------------|
+| `DataFactory.ts` | Typed, faker-backed factories that build payloads at runtime | `generateUserPayload()`, `generateOrderPayload()` |
+| `types.ts` | Payload / domain TypeScript types shared by factories and ATCs | `UserPayload`, `OrderPayload` |
+| `constants.ts` | Static test values, magic numbers, boundary constants | `MAX_ORDER_ITEMS`, `DEFAULT_PAGE_SIZE` |
+
+These three complement the static data folders: `tests/data/fixtures/` (parameterization rows as JSON/CSV) and `tests/data/mocks/` (canned mock/stub responses). Factories generate fresh runtime data; fixtures and mocks hold committed static data. Naming + folder conventions for those two live in `automation-standards.md` §6.
 
 Import aliases are mandatory (no relative imports):
 
@@ -253,6 +268,8 @@ async loginWithInvalidCredentials(payload: LoginPayload) {
 ```
 
 Different status codes, different UI states, or different business outcomes = separate ATCs. Same outcome, different data = one parameterized ATC. Minor conditional variations within the same behavior are acceptable; fundamentally different behavior is a separate ATC.
+
+> Rule 3 is a *within-partition* dedup rule — it does NOT authorize collapsing distinct partitions, boundaries, or states into one ATC, and it does NOT replace Boundary Value Analysis. One AC still maps to multiple ATCs (1:N): one per partition + boundary cases + state transitions. Derivation canon + triggers: `agentic-qa-core/references/test-design-doctrine.md`.
 
 ### Rule 4 — Locators inline
 

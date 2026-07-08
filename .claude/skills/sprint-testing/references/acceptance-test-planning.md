@@ -9,7 +9,7 @@ Stage 1 Planning for a single ticket inside a sprint. The ATP is authored in-ses
 
 The old local `test-analysis.md` mirror is **retired** — read the synced ATP file for the active modality instead. Jira is source of truth; never hand-write the synced file.
 
-This reference is for **manual / exploratory in-sprint testing per ticket RIGHT NOW**. It does **not** create Xray TC entities (see `test-documentation` for Stage 4), compute ROI scores (see `test-documentation`), or produce automation `spec.md` (see `test-automation/planning-playbook.md`). Bug reports are covered in `reporting-templates.md` (pass 5c).
+This reference is for **manual / exploratory in-sprint testing per ticket RIGHT NOW**. Its planning output is **TC outlines** (names + 1-line precond/expected), not the persistent regression TC set. Per the modality-aware TC-creation-timing rule (`sprint-testing/SKILL.md` §"TC creation timing"): **jira-native** creates no `Test` work items here (regression TCs are created in Stage 4, regression-worthy only); **jira-xray** **creates + executes** `Test` issues for the planned outlines this sprint (the `Test` is Xray's execution unit), which Stage 4 then selects + promotes into the Regression Test Plan. Either way this reference does **not** compute ROI scores or decide Candidate/Manual/Deferred (see `test-documentation` for Stage 4), nor produce automation `spec.md` (see `test-automation/planning-playbook.md`). Bug reports are covered in `reporting-templates.md` (pass 5c).
 
 For feature / multi-story scope see `feature-test-planning.md`.
 
@@ -25,11 +25,12 @@ Every phase in this document is an application of **Spec-Driven Testing (SDT)**:
 ### 1. Test from Specs
 
 ```
-BAD:  "I'm going to test the login and see what I find"
-GOOD: "I'm going to verify that STORY-XXX meets its acceptance criteria"
+BAD:  "I'm going to test the login and see what I find"   (aimless, no traceability)
+GOOD: "I'm going to start from STORY-XXX's ACs, then probe BEYOND them —
+       boundaries, invalid data, states, and anomalies the ACs don't mention"
 ```
 
-Before testing: read the complete story, understand its ACs, and review documented test cases. The specification already defines coverage — testing does not invent it.
+Before testing: read the complete story, understand its ACs, and review documented test cases. The specification defines the **starting point** of coverage, not its limit. ACs are the floor — verifying them is the minimum, not the goal (Principle 1-2 of `agentic-qa-core/references/test-design-doctrine.md`). SDT means *anchored* testing (every case traces to a risk or an AC), NOT *AC-bounded* testing.
 
 ### 2. Traceability
 
@@ -43,11 +44,17 @@ Every finding (pass, fail, or bug) must reference the story AND the specific AC 
 ### 3. Coverage from Requirements
 
 ```
-BAD:  "I tested everything I could think of"
-GOOD: "I verified each AC and its documented edge cases"
+BAD:  "I tested everything I could think of"             (subjective, gaps invisible)
+GOOD: "I verified each AC (the floor) AND probed the risk beyond it —
+       boundaries, invalid data, state transitions, anomalies"
 ```
 
-Coverage is measured by: % of ACs verified, % of test outlines executed, and edge cases covered. Phase 4 builds the outline set that makes this measurable.
+Coverage has **two axes**, and reporting only the first reports the floor:
+
+1. **AC-conformance (the floor)** — % of ACs verified + % of test outlines executed.
+2. **Risk-beyond-AC** — boundary / negative / state-transition / anomaly cases derived by technique (EP, BVA, State-Transition, Decision Tables, Pairwise), per `agentic-qa-core/references/test-design-doctrine.md`.
+
+Phase 4 builds the outline set across BOTH axes. Never present "100% of ACs verified" as completeness — state it as the floor, then report what was probed above it.
 
 ### 4. Exploratory with Purpose
 
@@ -65,7 +72,8 @@ Exploratory testing starts from the story and its ACs, looks for undocumented ed
 | **Random testing** — "click around and see what happens" | No focus, no measurable coverage, no traceability | Start from story + ACs, produce outlines first |
 | **Test without spec** — "I didn't read the story but I'll test anyway" | Cannot distinguish bug from expected behavior | Read the full ticket in Session Start before planning |
 | **Bug without context** — "Bug: the button doesn't work" | Dev cannot determine intended behavior | Reference story ID + AC number + reproduction steps |
-| **Coverage by intuition** — "I tested everything I could think of" | Subjective, gaps invisible | Measure against AC list + outline checklist |
+| **Coverage by intuition** — "I tested everything I could think of" | Subjective, gaps invisible | Measure against AC list (floor) + risk-beyond-AC outline checklist (EP / BVA / state / decision-table) |
+| **AC-bounded testing** — "all ACs pass, so we're done" | Stops at the floor; misses boundaries, errors, states the AC is silent on | Treat ACs as the entry condition; derive risk-beyond-AC cases by technique before declaring coverage |
 
 ### SDT workflow (how this reference implements it)
 
@@ -246,11 +254,26 @@ For Negative scenarios include the exact error message, status code, response er
 
 Mark edge-case scenarios sourced from Phase 2 with **NEEDS PO/DEV CONFIRMATION** until answered.
 
-Do not force a minimum scenario count. A 1-line AC may only need 1 scenario. A complex money flow may need 12.
+**1:N is the default (explode, then justify any collapse).** A non-trivial AC implies *several* scenarios — at minimum a valid partition, each distinct invalid partition, and the boundaries. Derive them with the techniques in Phase 4. Reduce an AC to a *single* scenario ONLY when it is trivially atomic (one boolean, no ranges, no states, no interacting inputs) and write the reason inline (`collapsed: trivially atomic`). The count is whatever the techniques yield — there is no minimum and no maximum, but it is never "1 by default". Anti-padding still holds: a scenario must explore a partition/boundary/state/risk a sibling does not. A complex money flow may need 12; a trivially-atomic toggle may justify 1.
 
 ---
 
 ## Phase 4 — Test Design (Test Outlines)
+
+### Technique-driven derivation (run FIRST — it decides the outline set)
+
+Do not jump to counts. For each refined AC, pick the technique(s) its shape demands (full canon + worked example: `agentic-qa-core/references/test-design-doctrine.md`). The triggers are binding:
+
+| Trigger in the AC | Technique | What it produces |
+|---|---|---|
+| Any input domain (always) | **Equivalence Partitioning** | one outline per valid class + one per distinct invalid class |
+| A range / limit / length / count / date-window | **Boundary Value Analysis** | outlines at `min-1·min·min+1 … max-1·max·max+1`, plus zero / empty / null / overflow |
+| A status / lifecycle / workflow field | **State-Transition** | one outline per valid transition + per *invalid* transition (trigger rejected in a state) |
+| 2+ conditions that interact (role × flag × status …) | **Decision Table** | enumerate condition combos, collapse equivalents, one outline per surviving rule |
+| 3+ combinable factors (browser × locale × plan …) | **Pairwise** | all-pairs selection; **log that pairwise was applied** so the reduction is visible |
+| Experience-based risk | **Error Guessing charter** | a time-boxed exploration mission (double-submit, back-button, `<script>`, expired token …) |
+
+Record, per AC: which technique(s) fired, and — if an AC collapsed to a single outline — the `trivially atomic` justification. An AC with a range that has no BVA outlines, or a status field with no transition outlines, is an incomplete plan.
 
 ### Coverage estimate
 
@@ -288,7 +311,7 @@ Examples:
 
 Anti-patterns: `Login test`, `Login - error`, `Test the form`, `Negative case`. Always describe behavior AND condition.
 
-**Note:** In Stage 4 `test-documentation` prepends `<TS_ID>: TC#:` to formalize these in Xray. Do not add the prefix here — this is manual / shift-left, not formal TC.
+**Note:** In Stage 4 `test-documentation` prepends `{US_ID}: TC#:` (always the User Story key, never the Test Set ID) to formalize these in Xray; Test Set membership is expressed via an issue link, not in the title. Do not add the prefix here — this is manual / shift-left, not formal TC.
 
 ### Outline structure (per scenario)
 
@@ -352,6 +375,15 @@ The modality was resolved in Session Start (§0) and persisted into `test-sessio
 
 > **Prerequisite (both modalities)**: Load `/acli` skill before executing any `[ISSUE_TRACKER_TOOL]` block below. In Modality jira-xray, additionally load `/xray-cli` for `[TMS_TOOL]` calls. Skip if Session Start §0.1 in `SKILL.md` already loaded them.
 
+> **Title grammar (QA planning ladder)** — every Plan and Run uses `{ACRONYM}: {scope-id}: {descriptor}`:
+> - **ATP** (Story Test Plan): `ATP: {STORY-KEY}: {story title}` — e.g. `ATP: PROJ-123: Apply discount at checkout`.
+> - **ATR** (Story Test Execution): `ATR: {STORY-KEY}: Story Testing` — the Story-level run is named **Story Testing** and runs ONCE per sprint per Story — e.g. `ATR: PROJ-123: Story Testing`.
+> - **FTP** (Feature Test Plan, feature/Epic altitude — see `feature-test-planning.md`): `FTP: {EPIC-KEY}: {feature}` — e.g. `FTP: PROJ-42: Checkout & Payments`.
+> - **FTR** (Feature Test Results): `FTR: {EPIC-KEY}: Feature Testing — {feature}{ · run N}` — the feature run is named **Feature Testing** and may run ≥1 per sprint — e.g. `FTR: PROJ-42: Feature Testing — Checkout · run 2`.
+> Bug-fix verification keeps `ReTest: {BUG_KEY}: {summary}` (a Test Execution). Sprint regression (`STP` / `STR`) lives in `/regression-testing`.
+
+> **Items over fields (excellence default, both modalities)** — by excellence ATP is a **Test Plan** issue and ATR is a **Test Execution** issue; parent every Test Plan (ATP / FTP) to the **QA Master Test Plan** epic and every Test Execution (ATR / FTR) to the **QA Test Artifacts** epic. The Story custom field (`{{jira.acceptance_test_plan}}` / `{{jira.acceptance_test_results}}`) is a **fallback ONLY** when the Test Plan / Test Execution work types are unavailable in the instance.
+
 #### Modality jira-xray
 
 ATP = `Test Plan` issue. ATR = `Test Execution` issue. Both linked bidirectionally to the Story.
@@ -359,7 +391,8 @@ ATP = `Test Plan` issue. ATR = `Test Execution` issue. Both linked bidirectional
 ```
 [TMS_TOOL] Create TestPlan:
   project: {{PROJECT_KEY}}
-  title: Test Plan: {{PROJECT_KEY}}-{n}
+  title: ATP: {STORY-KEY}: {story title}
+  parentEpic: QA Master Test Plan
 
 [ISSUE_TRACKER_TOOL] Update Issue:
   issue: {ATP_KEY}
@@ -372,7 +405,8 @@ ATP = `Test Plan` issue. ATR = `Test Execution` issue. Both linked bidirectional
 
 [TMS_TOOL] Create Execution:
   project: {{PROJECT_KEY}}
-  title: Test Results: {{PROJECT_KEY}}-{n}
+  title: ATR: {STORY-KEY}: Story Testing
+  parentEpic: QA Test Artifacts
   testPlan: {ATP_KEY}
   environment: {from session context, e.g. "Staging"}
   # tests: [] — filled at Stage 3 or by CI import
@@ -387,9 +421,9 @@ ATP = `Test Plan` issue. ATR = `Test Execution` issue. Both linked bidirectional
 
 Load `/xray-cli` skill for the concrete CLI syntax.
 
-#### Modality jira-native (no Xray)
+#### Modality jira-native (no Xray) — fallback only
 
-ATP/ATR live on the Story itself — no separate issues. Use the custom field IDs from `test-documentation/references/jira-setup.md`: `{{jira.acceptance_test_plan}}` for ATP and `{{jira.acceptance_test_results}}` for ATR. Each field is the source of truth; a `## <label>` comment is posted ONLY as a fallback when the field is absent on the instance. `fix-traceability` checks the field, or the fallback comment when the field is absent.
+This branch is the **degraded fallback** (Test Plan / Test Execution work types unavailable). ATP/ATR live on the Story itself — no separate issues. Use the custom field IDs from `test-documentation/references/jira-setup.md`: `{{jira.acceptance_test_plan}}` for ATP and `{{jira.acceptance_test_results}}` for ATR. Each field is the source of truth; a `## <label>` comment is posted ONLY as a fallback when the field is absent on the instance. `fix-traceability` checks the field, or the fallback comment when the field is absent.
 
 ```
 [ISSUE_TRACKER_TOOL] Update Issue:
@@ -409,7 +443,7 @@ ATP/ATR live on the Story itself — no separate issues. Use the custom field ID
 [ISSUE_TRACKER_TOOL] Update Issue:
   issue: {STORY_KEY}
   fields:
-    {{jira.acceptance_test_results}}: "Test Results: {{PROJECT_KEY}}-{n} — pending execution"
+    {{jira.acceptance_test_results}}: "ATR: {STORY-KEY}: Story Testing — pending execution"
 ```
 
 Load `/acli` skill for the concrete Jira CLI syntax.
@@ -487,7 +521,7 @@ See SKILL.md veto rules — veto beats risk score for bugs too.
 1. **Plan before code** — no outline writing before the user OKs the story explanation from Session Start.
 2. **Specific data in scenarios** — "valid email" is not enough; write `"john+test@example.com"`.
 3. **Edge cases flagged for PO** — if you invented the expected behavior, mark it **NEEDS PO/DEV CONFIRMATION** and call it out in the final report.
-4. **Do not force minimum counts** — a legitimately simple ticket may have 2 outlines. Forcing 10 dilutes value.
+4. **Explode by default; justify any collapse (not the reverse)** — the count is whatever the Phase 4 techniques yield. A trivially-atomic AC may legitimately collapse to 1-2 outlines *with a stated reason* (`trivially atomic`); a money/range/stateful AC almost never does. Anti-padding = never add an outline that explores nothing a sibling does not — NOT "default to the smallest number". Both forcing 10 empty outlines and stopping at 2 when boundaries/states are untested are failures.
 5. **Traceability now, TCs later** — this skill produces the ATP only. Stage 4 `test-documentation` turns these outlines into Xray TCs with ROI scoring. When TCs do exist, the TC body = the `Test` issue's `description` (synced in both modalities); the Xray Gherkin / Test-Steps plugin field is NOT synced — it only mirrors the description.
 6. **Epic inheritance beats duplication** — if the feature plan already answered a risk or integration point, cite it, do not re-derive.
 7. **Language** — artifacts + commit messages in English; conversation mirrors the user's language.
