@@ -52,3 +52,5 @@ Jira-native (no Xray). ATP/ATR stored as custom fields + comments on the Story.
 
 - Shift-Left refinement completed: 2026-06-02 (< 30 days ago → short-circuit Phases 1-3)
 - business-feature-map.md not available — proceed with ticket inline context
+- 2026-06-25 re-verification: tried the BK-166 email+password login path (since BK-175 magic-link is still Open) to confirm BK-23's duplicate-ATC deployment status. Login form itself works, but `.env` STAGING_USER_PASSWORD (6 chars) fails the backend's 8-char policy — 401, never reached the ATC library. Deployment question still open.
+- 2026-06-25 incidental bug filed: BK-181 (Authentication: Signup: "Request a new code" calls signup instead of resend, leaks raw validation error) — found on BK-166's flow while probing this blocker, unrelated to BK-23's own scope. Related to BK-166, not to BK-23 directly.

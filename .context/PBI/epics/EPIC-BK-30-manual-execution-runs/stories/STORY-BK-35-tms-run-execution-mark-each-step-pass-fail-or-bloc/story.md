@@ -3,9 +3,9 @@
 **Jira Key:** [BK-35](https://jira.upexgalaxy.com/browse/BK-35)
 **Epic:** [BK-30](https://jira.upexgalaxy.com/browse/BK-30) (Manual Execution & Runs)
 **Type:** Historia
-**Status:** Backlog
+**Status:** Estimation
 **Priority:** Medium
-**Story Points:** 1
+**Story Points:** 8
 
 ---
 
@@ -31,21 +31,32 @@
 
 ---
 
+## Fields
+
+> Each rich-text field is a separate file in this folder.
+
+- [Acceptance Criteria](./acceptance-criteria.md)
+- [Acceptance Test Plan (QA)](./acceptance-test-plan.md)
+
+---
+
 ## Traceability
 
-### Historias (2)
+### Historias (3)
 
-- [BK-34](https://jira.upexgalaxy.com/browse/BK-34): TMS-Run Execution | Start a manual run in a chosen environment _(Ready For Dev)_
-- [BK-40](https://jira.upexgalaxy.com/browse/BK-40): TMS-Defect Filing | File a defect from a failing run step _(Backlog)_
+- [BK-34](https://jira.upexgalaxy.com/browse/BK-34): TMS-Run Execution | Start a manual run in a chosen environment _(Ready For Release)_
+- [BK-40](https://jira.upexgalaxy.com/browse/BK-40): TMS-Defect Filing | File a defect from a failing run step _(Ready For Dev)_
+- [BK-223](https://jira.upexgalaxy.com/browse/BK-223): TMS-Automation API | Stream step results during an automated run _(Backlog)_
 
 ---
 
 ## Metadata
 
 - **Created:** 5/28/2026
-- **Updated:** 6/8/2026
+- **Updated:** 7/13/2026
 - **Reporter:** Ely
-- **Assignee:** Unassigned
+- **Assignee:** Benjamin Segovia
+- **Labels:** shift-left-reviewed
 
 ---
 
