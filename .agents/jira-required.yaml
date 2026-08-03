@@ -711,3 +711,39 @@ work_types:
         { from: automated, to: in_review, description: Re-open automated work for review }
       recovered: { from: aborted, to: to_do, description: Restore an aborted item back to To Do }
     used_by: [sprint-development]
+
+  test_plan:
+    jira_issue_type: Test Plan
+    description: Xray Test Plan — holds the ATP body in its description (role atp)
+    sync: discovery
+    role: atp
+    content: description
+    local_dir: test-plans
+
+  test_execution:
+    jira_issue_type: Test Execution
+    description: Xray Test Execution — holds the ATR body in its description (role atr)
+    sync: discovery
+    role: atr
+    content: description
+    local_dir: test-executions
+
+  re_test_execution:
+    jira_issue_type: Re-Test Execution
+    description: Xray Re-Test Execution (subtask) — retest ATR (role atr)
+    sync: discovery
+    role: atr
+    content: description
+    local_dir: test-executions
+
+  test_set:
+    jira_issue_type: Test Set
+    description: Xray Test Set — grouping of tests (not synced)
+    sync: never
+    local_dir: test-sets
+
+  precondition:
+    jira_issue_type: Precondition
+    description: Xray Precondition — reusable test prerequisite (not synced)
+    sync: never
+    local_dir: preconditions

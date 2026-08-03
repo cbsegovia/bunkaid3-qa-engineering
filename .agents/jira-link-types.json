@@ -1,6 +1,6 @@
 {
   "blocking": {
-    "id": "10008",
+    "id": "10010",
     "name": "Blocking",
     "outward": "blocks",
     "inward": "is blocked by",
@@ -12,13 +12,6 @@
     "outward": "blocks",
     "inward": "is blocked by",
     "exists_in_workspace": true
-  },
-  "causes": {
-    "id": "",
-    "name": "",
-    "outward": "causes",
-    "inward": "is caused by",
-    "exists_in_workspace": false
   },
   "cloners": {
     "id": "10001",
@@ -77,7 +70,7 @@
     "exists_in_workspace": true
   },
   "test_design": {
-    "id": "10010",
+    "id": "10008",
     "name": "Test Design",
     "outward": "designs",
     "inward": "is designed by",
@@ -89,13 +82,6 @@
     "outward": "executes",
     "inward": "is executed by",
     "exists_in_workspace": true
-  },
-  "tested_by": {
-    "id": "",
-    "name": "",
-    "outward": "tested by",
-    "inward": "tests",
-    "exists_in_workspace": false
   },
   "xray_defect": {
     "id": "10012",
