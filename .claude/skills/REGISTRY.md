@@ -1,6 +1,6 @@
 # Skill Registry (auto-generated)
 
-> Generated: `2026-06-30T22:32:54.750Z`
+> Generated: `2026-07-22T18:01:19.122Z`
 > Generator: `bun scripts/build-skill-registry.ts`
 > Protocol: `.claude/skills/agentic-qa-core/references/skill-resolver.md`
 
@@ -8,7 +8,7 @@ This file is the per-session compact-rules cache for the Skill Resolver protocol
 The orchestrator copies one or more `## Skill: <slug>` blocks below into every subagent briefing under `## Project Standards (auto-resolved)`.
 Subagents trust those compact rules and only read the full SKILL.md when explicitly instructed.
 
-Skills indexed: 13
+Skills indexed: 14
 
 ---
 ## Skill: acli
@@ -65,25 +65,53 @@ Skills indexed: 13
 
 **Compact Rules**:
 - **Speak like a human, not a terminal.** For the whole explanation, **suspend any compressed / caveman register** — full sentences, warm tone, simple words, zero unexplained jargon. Define each technical term the first time you use it ("an ATC — basically one complete test case, start to finish"). This is an explicit in-skill override of the default register; resume your normal style once the person is oriented.
-- **Mirror the user's language.** Spanish in → explain in Spanish (the repo ships Spanish versions of every presentation — see below). English in → English.
+- **Mirror the user's language.** Spanish in → explain in Spanish. English in → explain in English — but note that the visual decks ship in Spanish only (technical terms stay in English inside them).
 - **Start from where they are.** If the goal is unclear, ask ONE quick question ("are you trying to test a ticket, or understand the whole flow?"). Don't dump all six stages on someone who asked about one.
 - **Concept first, in plain words** — what the activity is and *why* it matters — before any command, flag, or file path.
-- **Then offer the visual presentation.** Each workflow skill has a `how-it-works` deck that teaches the activity as a craft (Part 1) and then how the AI does it from the terminal (Part 2). Offer to open it in their browser — follow the opening protocol below.
+- **Then offer the visual presentation.** Each workflow skill has a `how-it-works` deck that walks the skill's workflow step by step: a cover slide, a full workflow map (main path + adjacent paths), then one phase per slide with the craft concepts embedded where they apply. Offer to open it in their browser — follow the opening protocol below.
 - **Hand off when oriented.** Once they know which skill to call, point them at it and step back.
-- **Announce + ask.** "I can open a short visual deck that walks through how `/sprint-testing` works — first the manual craft, then how the skill does it from the terminal. Want me to open it in your browser?"
-- **Match the language** of the conversation: Spanish user → the `.es.html` file; English user → the `.html` file.
-- **On a yes, open exactly one deck** (pick the OS command for the user's platform):
+- **Announce + ask.** "I can open a short visual deck that walks through how `/sprint-testing` works — the full workflow map first, then each phase step by step. Want me to open it in your browser?"
+- **Decks are Spanish-only** (`.es.html`). If the user speaks English, mention the deck is in Spanish (technical terms stay in English) before opening it.
+- **On a yes, open exactly one deck** — published URL first; local file as offline fallback (pick the OS command for the user's platform):
 - **One at a time.** Let the person watch and come back with questions before offering the next skill's deck. Do not batch-open several.
 - **After it opens,** tell them the keys (`←` `→` to move, `S` for speaker notes) and offer to walk the slides together or answer questions as they go.
+- **For "how does KATA work" / architecture questions,** also offer the interactive KATA Academy (`.../kata/`) — 8 interactive chapters, Spanish, presentation mode with the `P` key.
 - Syncs the ticket from Jira via `bun run jira:sync-issues get <KEY> --include-comments` (canonical detailed read — `acli view` returns null for custom fields), then reads the materialized `.md` files.
 - Loads the synced context from `.context/PBI/epics/EPIC-<KEY>-<slug>/stories/STORY-<KEY>-<slug>/` (Module = Epic; Jira-synced files are a read-only cache).
 - Explores the relevant code in the target repo.
-- Authors the ATP (Acceptance Test Plan) → writes it to the Jira field (or fallback comment) → re-syncs; hand-writes only NON-Jira files (context.md, evidence/).
 - (truncated — read full SKILL.md for the rest)
 
 **Read full SKILL.md when**: the compact rules above are insufficient (e.g. novel scenario, debugging, or the briefing tells you to load the full skill).
 
 > Source: `.claude\skills\agentic-qa-onboard\SKILL.md` · phase: `bootstrap` · extraction strategy: B
+
+---
+
+## Skill: bug-screenshot-annotation
+
+**Purpose**: Turns a raw bug screenshot into a QA-style annotated evidence image — circles/ovals around the broken region, arrows, callout text boxes,...
+
+**Compact Rules**:
+- A quota-walled image MCP was simply unavailable (429 across every tier). Not a design problem — just dead.
+- A second generative service got hard-blocked by the agent runtime's own data-exfiltration classifier, because QA screenshots carry real product/customer/competitor data and the destination was not a trusted host. Critically, **explicit user authorization in chat did not lift the block** — and one screenshot had already leaked to the service's public S3/CloudFront bucket before the second attempt was caught.
+- **Input**: a raw screenshot that already exists on disk (typically in the ticket's PBI `evidence/` folder). This skill overlays shapes; it does not generate or edit images from a text description.
+- **Output**: exactly ONE file that counts as evidence — the final rendered annotated PNG, in the ticket's `evidence/` folder. The crop and the annotation HTML are Bucket C working files (see `../agentic-qa-core/references/evidence-conventions.md` §1): session scratchpad only, never referenced from Jira/ATR/bug tickets.
+- **Not for**: filing the bug (reporting-templates owns that), plain before/after shots that read clearly raw, photos of physical objects/documents.
+- **Identify the region.** From the raw screenshot (or its accessibility snapshot), work out the pixel crop box and roughly where each annotation shape lands relative to it.
+- **Crop with Python + PIL — scratchpad only.**
+- **Build the annotation HTML — scratchpad only.** The crop goes in as a background `<img>`; each annotation is one absolutely-positioned `<div>` overlay. Do NOT design from scratch — copy/adjust the commented blocks in `references/shapes.html` (circle-callout, arrow-to-region, callout-box, badge-corner, axis-tick + axis-tag, before-after) and keep its z-index scale.
+- **Serve it over loopback.** The browser-automation CLI refuses `file://` URLs (errors out before rendering) — a local HTTP server is the only way, and loopback binding is also what keeps this approach exfiltration-safe, not just a workaround:
+- **Capture with the browser-automation CLI.** Load `/playwright-cli` first (CLI → skill auto-load rule) for exact verbs/flags. Flow: open `http://127.0.0.1:<port>/annotation.html`, resize the viewport to the HTML's real dimensions (equal or larger — a smaller viewport clips callouts), then screenshot with an explicit destination path into the ticket's `evidence/` folder, named:
+- **Inspect and iterate.** Read the PNG back and check it reads cleanly. Not optional and not one-shot — expect at least one adjustment pass: move/resize a circle or callout box, rewrap/shorten callout text, nudge the badge or arrow out of a collision.
+- **Clean up.** Kill the HTTP server process (`kill <pid>` or `pkill -f "http.server <port>"`). Never leave it running past the session.
+- **Report the path — immediately, unprompted.** The moment the final PNG lands in `evidence/`, state its repo-relative path in chat, in that same turn (standing contract: `../agentic-qa-core/references/session-footer-contract.md` Part 1). The path must also reappear in the session-close consolidated screenshot list, leading the "Bug annotations" group.
+- **(Optional — this repo's upgrade over the manual-attach model.) Embed into the bug issue.** Jira accepts inline images via the bundled helper — offer to publish the annotated PNG directly as an evidence comment on the bug (human confirms first):
+- **Badge hidden behind a callout box.** Both are `position: absolute`; without explicit stacking, DOM order (not visual intent) decides paint order. `references/shapes.html` fixes this with an explicit z-index scale — base image `1` → circles/arrows/ticks `10` → callout boxes `20` → corner badge `30` (always topmost). Skipping the scale is the #1 source of annotation bugs; don't let a copy-pasted block quietly drop its `z-index`.
+- (truncated — read full SKILL.md for the rest)
+
+**Read full SKILL.md when**: the compact rules above are insufficient (e.g. novel scenario, debugging, or the briefing tells you to load the full skill).
+
+> Source: `.claude\skills\bug-screenshot-annotation\SKILL.md` · phase: `unknown` · extraction strategy: B
 
 ---
 

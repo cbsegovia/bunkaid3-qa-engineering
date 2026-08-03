@@ -20,6 +20,10 @@ export default antfu({
     'allure-report',
     'reports',
     'cli/legacy/**',
+    // JXA (JavaScript for Automation) script — runs under macOS `osascript`,
+    // not Node/Bun. ObjC/$ globals and the run(argv) entry point are not a
+    // Node dialect, so standard JS lint rules produce false positives.
+    'cli/slack-clip.js',
     '*.min.js',
     // Documentation files (contain code examples that shouldn't be linted)
     '**/*.md',

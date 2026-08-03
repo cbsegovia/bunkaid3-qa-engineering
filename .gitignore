@@ -141,3 +141,7 @@ dbhub.local.toml
 
 # ----- 2026-06-25 (sync) -----
 .template/claude-md.upstream.sha
+
+# ----- 2026-07-22 (sync) -----
+/.allure/
+/.agents/prompts/
