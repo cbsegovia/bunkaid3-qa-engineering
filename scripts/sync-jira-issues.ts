@@ -74,6 +74,38 @@ import { basename, join } from 'node:path';
 import { parse as parseYaml } from 'yaml';
 
 // ============================================================================
+// COLORS & OUTPUT HELPERS
+// ============================================================================
+
+const colors = {
+  reset: '\x1B[0m',
+  bold: '\x1B[1m',
+  dim: '\x1B[2m',
+  red: '\x1B[31m',
+  green: '\x1B[32m',
+  yellow: '\x1B[33m',
+  blue: '\x1B[34m',
+  magenta: '\x1B[35m',
+  cyan: '\x1B[36m',
+  white: '\x1B[37m',
+};
+
+const log = {
+  info: (msg: string) => console.log(`${colors.blue}ℹ${colors.reset} ${msg}`),
+  success: (msg: string) => console.log(`${colors.green}✔${colors.reset} ${msg}`),
+  warn: (msg: string) => console.log(`${colors.yellow}⚠${colors.reset} ${msg}`),
+  error: (msg: string) => console.error(`${colors.red}✖${colors.reset} ${msg}`),
+  title: (msg: string) => console.log(`\n${colors.bold}${colors.cyan}${msg}${colors.reset}`),
+  line: (msg: string) => console.log(msg),
+  dim: (msg: string) => console.log(`${colors.dim}${msg}${colors.reset}`),
+  json: (obj: unknown) => console.log(JSON.stringify(obj, null, 2)),
+  tree: (prefix: string, msg: string, isLast: boolean) => {
+    const branch = isLast ? '└─' : '├─';
+    console.log(`  ${branch} ${prefix}: ${msg}`);
+  },
+};
+
+// ============================================================================
 // CONSTANTS
 // ============================================================================
 
@@ -273,6 +305,7 @@ type ContentMode = 'split' | 'single' | 'description' | 'auto';
 interface WorkTypeEntry {
   slug: string
   jiraIssueType: string
+  jiraIssueTypeAliases: string[]
   sync: SyncMode
   recommended: boolean
   coverable: boolean
@@ -331,6 +364,9 @@ function loadRegistry(): Registry {
         const e = raw as Record<string, unknown>;
         const jiraIssueType = typeof e.jira_issue_type === 'string' ? e.jira_issue_type.trim() : '';
         if (!jiraIssueType) { continue; }
+        const jiraIssueTypeAliases = Array.isArray(e.jira_issue_type_aliases)
+          ? (e.jira_issue_type_aliases as unknown[]).filter((a): a is string => typeof a === 'string' && a.trim() !== '')
+          : [];
 
         const role: 'atp' | 'atr' | null = e.role === 'atp' ? 'atp' : e.role === 'atr' ? 'atr' : null;
         const cr = e.content;
@@ -343,6 +379,7 @@ function loadRegistry(): Registry {
         list.push({
           slug,
           jiraIssueType,
+          jiraIssueTypeAliases,
           sync,
           recommended: e.recommended === true,
           coverable: e.coverable === true,
@@ -360,6 +397,14 @@ function loadRegistry(): Registry {
   const bySlug = new Map<string, WorkTypeEntry>();
   for (const e of list) {
     byJiraType.set(e.jiraIssueType, e);
+    for (const alias of e.jiraIssueTypeAliases) {
+      const existing = byJiraType.get(alias);
+      if (existing && existing.slug !== e.slug) {
+        log.warn(`work_types: alias '${alias}' on '${e.slug}' collides with '${existing.slug}' — keeping '${existing.slug}', check .agents/jira-required.yaml`);
+        continue;
+      }
+      byJiraType.set(alias, e);
+    }
     bySlug.set(e.slug, e);
   }
   REGISTRY_CACHE = { list, byJiraType, bySlug };
@@ -539,38 +584,6 @@ interface ParsedArgs {
   noDefects?: boolean
   project?: string
 }
-
-// ============================================================================
-// COLORS & OUTPUT HELPERS
-// ============================================================================
-
-const colors = {
-  reset: '\x1B[0m',
-  bold: '\x1B[1m',
-  dim: '\x1B[2m',
-  red: '\x1B[31m',
-  green: '\x1B[32m',
-  yellow: '\x1B[33m',
-  blue: '\x1B[34m',
-  magenta: '\x1B[35m',
-  cyan: '\x1B[36m',
-  white: '\x1B[37m',
-};
-
-const log = {
-  info: (msg: string) => console.log(`${colors.blue}ℹ${colors.reset} ${msg}`),
-  success: (msg: string) => console.log(`${colors.green}✔${colors.reset} ${msg}`),
-  warn: (msg: string) => console.log(`${colors.yellow}⚠${colors.reset} ${msg}`),
-  error: (msg: string) => console.error(`${colors.red}✖${colors.reset} ${msg}`),
-  title: (msg: string) => console.log(`\n${colors.bold}${colors.cyan}${msg}${colors.reset}`),
-  line: (msg: string) => console.log(msg),
-  dim: (msg: string) => console.log(`${colors.dim}${msg}${colors.reset}`),
-  json: (obj: unknown) => console.log(JSON.stringify(obj, null, 2)),
-  tree: (prefix: string, msg: string, isLast: boolean) => {
-    const branch = isLast ? '└─' : '├─';
-    console.log(`  ${branch} ${prefix}: ${msg}`);
-  },
-};
 
 // ============================================================================
 // ARGUMENT PARSING
@@ -2377,14 +2390,19 @@ async function syncTypeSweep(
   options: SyncOptions,
   result: SyncResult,
 ): Promise<void> {
-  if (!options.json) { log.info(`Fetching ${entry.jiraIssueType} issues...`); }
-  const jql = `project = ${config.project} AND issuetype = "${entry.jiraIssueType}"${sprintAndClause(options)} ORDER BY key ASC`;
+  const typeNames = [entry.jiraIssueType, ...entry.jiraIssueTypeAliases];
+  const typeLabel = typeNames.join('/');
+  if (!options.json) { log.info(`Fetching ${typeLabel} issues...`); }
+  const issuetypeClause = typeNames.length > 1
+    ? `issuetype in (${typeNames.map(t => `"${t}"`).join(', ')})`
+    : `issuetype = "${entry.jiraIssueType}"`;
+  const jql = `project = ${config.project} AND ${issuetypeClause}${sprintAndClause(options)} ORDER BY key ASC`;
   const issues = await searchIssues(config, jql, ['issuetype', 'summary']);
-  if (!options.json) { log.success(`Found ${issues.length} ${entry.jiraIssueType} issue(s)`); }
+  if (!options.json) { log.success(`Found ${issues.length} ${typeLabel} issue(s)`); }
 
   if (issues.length === 0) {
     if (entry.recommended) {
-      result.warnings.push(`INFO: no '${entry.jiraIssueType}' issues in ${config.project} — this project commonly tracks ${entry.jiraIssueType}.`);
+      result.warnings.push(`INFO: no '${typeLabel}' issues in ${config.project} — this project commonly tracks ${typeLabel}.`);
     }
     return;
   }

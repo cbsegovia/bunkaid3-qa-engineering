@@ -385,6 +385,11 @@ work_types:
 
   bug:
     jira_issue_type: Bug
+    # This workspace's issue type id 10020 is currently displayed as "Error" in Jira
+    # (renamed from "Bug"; jira-workflows.json still shows the pre-rename name). Declared
+    # here so the sync matches issues under either display name until the catalog is
+    # regenerated with `bun run jira:sync-workflows`.
+    jira_issue_type_aliases: [Error]
     description: Defect / bug work item
     required_statuses:
       open: { description: Newly reported bug awaiting triage }
