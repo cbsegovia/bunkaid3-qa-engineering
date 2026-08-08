@@ -3,9 +3,10 @@
 **Jira Key:** [BK-45](https://jira.upexgalaxy.com/browse/BK-45)
 **Epic:** [BK-44](https://jira.upexgalaxy.com/browse/BK-44) (Coverage & Traceability)
 **Type:** Historia
-**Status:** Shift-Left QA
+**Status:** QA Approved
 **Priority:** Medium
-**Story Points:** -
+**Story Points:** 8
+**Web Link:** https://staging-upexbunkai.vercel.app/
 
 ---
 
@@ -22,10 +23,19 @@ As a QA Lead, I want to open any user story and see its full evidence chain — 
 > Each rich-text field is a separate file in this folder.
 
 - [Acceptance Criteria](./acceptance-criteria.md)
+- [Scope](./scope.md)
+- [Out Of Scope](./out-of-scope.md)
+- [Implementation Plan (Dev)](./implementation-plan.md)
+- [Acceptance Test Plan (QA)](./acceptance-test-plan.md)
+- [Acceptance Test Results (QA)](./acceptance-test-results.md)
 
 ---
 
 ## Traceability
+
+### Defect (1)
+
+- [BK-317](https://jira.upexgalaxy.com/browse/BK-317): Coverage & Traceability: Latest-run status pill shows "Aborted" — AC-01 (BK-45) specifies pass/fail/blocked/skipped _(Abierta)_
 
 ### Epics (3)
 
@@ -35,17 +45,17 @@ As a QA Lead, I want to open any user story and see its full evidence chain — 
 
 ### Historia (1)
 
-- [BK-50](https://jira.upexgalaxy.com/browse/BK-50): TMS-Traceability | Export the assembled chain as a read-only snapshot _(Shift-Left QA)_
+- [BK-50](https://jira.upexgalaxy.com/browse/BK-50): TMS-Traceability | Export the assembled chain as a read-only snapshot _(Ready For Dev)_
 
 ---
 
 ## Metadata
 
 - **Created:** 6/1/2026
-- **Updated:** 6/10/2026
+- **Updated:** 8/8/2026
 - **Reporter:** Ely
-- **Assignee:** Unassigned
-- **Labels:** new-feature
+- **Assignee:** Benjamin Segovia
+- **Labels:** shift-left-2026-06-11, shift-left-reviewed
 
 ---
 
