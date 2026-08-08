@@ -2,7 +2,7 @@
 
 **Jira Key:** [BK-175](https://jira.upexgalaxy.com/browse/BK-175)
 **Priority:** Highest
-**Status:** En revisión
+**Status:** Cerrada
 **Components:** Tenancy & Identity
 
 ---
@@ -58,7 +58,7 @@ The staging magic-link login flow cannot be completed: Supabase Auth sends a 6-d
 ## Metadata
 
 - **Created:** 6/22/2026
-- **Updated:** 7/28/2026
+- **Updated:** 8/7/2026
 - **Reporter:** Benjamin Segovia
 - **Assignee:** Benjamin Segovia
 
