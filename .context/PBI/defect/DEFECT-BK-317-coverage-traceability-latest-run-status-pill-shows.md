@@ -1,14 +1,9 @@
 # DEFECT: Coverage & Traceability: Latest-run status pill shows "Aborted" — AC-01 (BK-45) specifies pass/fail/blocked/skipped
 
 **Jira Key:** [BK-317](https://jira.upexgalaxy.com/browse/BK-317)
-**Related Story:** [BK-45](https://jira.upexgalaxy.com/browse/BK-45) - TMS-Traceability | Render full US to bug evidence chain in one read
 **Priority:** Low
-**Status:** Cerrada
+**Status:** Ready For QA
 **Components:** Coverage & Traceability
-**Severity:** Menor
-**Error Type:** Content
-**Test Environment:** Staging
-**Fix Type:** Bugfix
 
 ---
 
@@ -60,24 +55,6 @@ The latest-run status pill for that row reads "Aborted".
 
 ---
 
-## 🐞 Actual Result
-
-The latest-run status pill for a Test whose latest run was aborted reads "Aborted".
-
----
-
-## ✅ Expected Result
-
-Per BK-45 AC-01, the Test layer's latest-run status must render as one of exactly four literal values: pass / fail / blocked / skipped. "Aborted" is not one of the four values the acceptance criterion specifies.
-
----
-
-## 🧫 Evidence
-
-Screenshot: `evidence/BK-45-tc01-tc07-full-chain-multidefect.png` — full-chain render for the seeded story `d57804e8-d614-445e-b707-8c25d9ca5dac`, showing the Pass / Blocked / Aborted / no-run-yet ATC set; the "Aborted" pill is visible alongside the other terminal statuses. Captured during BK-45 Stage 2 execution, 2026-08-08.
-
----
-
 ## Related Issues
 
 - is caused by: [BK-45](https://jira.upexgalaxy.com/browse/BK-45) - TMS-Traceability | Render full US to bug evidence chain in one read
@@ -87,7 +64,7 @@ Screenshot: `evidence/BK-45-tc01-tc07-full-chain-multidefect.png` — full-chain
 ## Metadata
 
 - **Created:** 8/8/2026
-- **Updated:** 8/9/2026
+- **Updated:** 8/8/2026
 - **Reporter:** Benjamin Segovia
 - **Assignee:** Benjamin Segovia
 - **Labels:** copy-mismatch, defect, exploratory-testing, traceability
