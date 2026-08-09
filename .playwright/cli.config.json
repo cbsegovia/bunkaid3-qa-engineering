@@ -13,7 +13,7 @@
       }
     }
   },
-  "outputDir": ".context/PBI/epics/EPIC-BK-44-coverage-traceability/stories/STORY-BK-45-tms-traceability-render-full-us-to-bug-evidence-ch/evidence",
+  "outputDir": ".context/PBI/epics/EPIC-BK-44-coverage-traceability/stories/STORY-BK-50-tms-traceability-export-the-assembled-chain-as-a-r/evidence",
   "outputMode": "file",
   "console": {
     "level": "warning"
