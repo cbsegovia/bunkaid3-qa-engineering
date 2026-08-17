@@ -9,30 +9,30 @@
 
 import { config, expect, test } from '@TestFixture';
 
-test.describe('UPEX-100: User Session API', { tag: ['@critical'] }, () => {
+test.describe('BK-100: User Session API', { tag: ['@critical'] }, () => {
   /**
    * Validates that the auth token is automatically loaded from api-state.json
    * and can be used to make authenticated API calls.
    */
-  test('UPEX-100: should get current user with valid token', async ({ api }) => {
+  test('BK-100: should get current user with valid session', async ({ api }) => {
     // The token is automatically loaded from api-state.json by ApiFixture
     // Use helper (not ATC) — this is a read-only verification
-    const [response, userData] = await api.auth.getCurrentUser();
+    const [response, meData] = await api.auth.getCurrentUser();
 
-    // Test-level assertions (UPEX Dojo format)
+    // Test-level assertions (real /api/v1/me shape — no `name` field)
     expect(response.status()).toBe(200);
-    expect(userData.user).toBeDefined();
-    expect(userData.user.id).toBeDefined();
-    expect(userData.user.email).toBeDefined();
-    expect(userData.user.name).toBeDefined();
-    expect(typeof userData.user.name).toBe('string');
+    expect(meData.user).toBeDefined();
+    expect(meData.user.id).toBeDefined();
+    expect(meData.user.email).toBeDefined();
+    expect(meData.auth.source).toMatch(/^(cookie|bearer)$/);
+    expect(Array.isArray(meData.workspaces)).toBe(true);
   });
 
   /**
    * Validates that unauthenticated requests are rejected.
    * Uses the helper directly with token cleared.
    */
-  test('UPEX-100: should fail without token', async ({ api }) => {
+  test('BK-100: should fail without token', async ({ api }) => {
     // Temporarily clear token to test unauthorized access
     api.clearAuthToken();
 
@@ -44,23 +44,23 @@ test.describe('UPEX-100: User Session API', { tag: ['@critical'] }, () => {
   });
 
   /**
-   * Validates that we can re-authenticate and get a new token.
-   * This tests the runtime token refresh capability.
+   * Validates that we can re-authenticate and get a new session.
+   * This tests the runtime re-auth capability (per-run mint, no auto-refresh).
    */
-  test('UPEX-100: should be able to re-authenticate', async ({ api }) => {
+  test('BK-100: should be able to re-authenticate', async ({ api }) => {
     // Clear existing token
     api.clearAuthToken();
 
-    // Re-authenticate using the ATC (UPEX Dojo uses 'email' field)
+    // Re-authenticate using the ATC
     const credentials = {
       email: config.testUser.email,
       password: config.testUser.password,
     };
 
-    const [response, tokenData] = await api.auth.authenticateSuccessfully(credentials);
+    const [response, body] = await api.auth.authenticateSuccessfully(credentials);
 
-    // Verify new token was obtained and set
+    // Verify new session was obtained and set
     expect(response.status()).toBe(200);
-    expect(tokenData.access_token).toBeDefined();
+    expect(body.session.access_token).toBeDefined();
   });
 });

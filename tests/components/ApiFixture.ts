@@ -18,7 +18,8 @@ import type { TestContextOptions } from '@TestContext';
 
 import { ApiBase } from '@api/ApiBase';
 import { AuthApi } from '@api/AuthApi';
-import { ExampleApi } from '@api/ExampleApi';
+import { TraceabilityApi } from '@api/TraceabilityApi';
+import { UserStoryApi } from '@api/UserStoryApi';
 
 // ============================================
 // API Fixture Class
@@ -28,15 +29,19 @@ export class ApiFixture extends ApiBase {
   /** Auth component - handles login and token management */
   readonly auth: AuthApi;
 
-  /** Example component - reference only */
-  readonly example: ExampleApi;
+  /** User Story component - read User Stories */
+  readonly userStory: UserStoryApi;
+
+  /** Traceability component - BK-45 evidence chain read */
+  readonly traceability: TraceabilityApi;
 
   constructor(options: TestContextOptions) {
     super(options);
 
     // All components receive the same options (same request context)
     this.auth = new AuthApi(options);
-    this.example = new ExampleApi(options);
+    this.userStory = new UserStoryApi(options);
+    this.traceability = new TraceabilityApi(options);
   }
 
   // ============================================
@@ -50,7 +55,8 @@ export class ApiFixture extends ApiBase {
   override setAuthToken(token: string) {
     super.setAuthToken(token);
     this.auth.setAuthToken(token);
-    this.example.setAuthToken(token);
+    this.userStory.setAuthToken(token);
+    this.traceability.setAuthToken(token);
   }
 
   /**
@@ -59,6 +65,7 @@ export class ApiFixture extends ApiBase {
   override clearAuthToken() {
     super.clearAuthToken();
     this.auth.clearAuthToken();
-    this.example.clearAuthToken();
+    this.userStory.clearAuthToken();
+    this.traceability.clearAuthToken();
   }
 }
