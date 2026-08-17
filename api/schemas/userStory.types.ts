@@ -25,3 +25,11 @@ export type GetUserStoryResponse = GetUserStoryPath['responses']['200']['content
 
 type ListUserStoriesPath = paths['/api/v1/modules/{id}/user-stories']['get'];
 export type ListUserStoriesResponse = ListUserStoriesPath['responses']['200']['content']['application/json'];
+
+// ============================================================================
+// Endpoint Types — PATCH /api/v1/user-stories/{id}
+// ============================================================================
+
+type UpdateUserStoryPath = paths['/api/v1/user-stories/{id}']['patch'];
+export type UpdateUserStoryPayload = UpdateUserStoryPath['requestBody']['content']['application/json'];
+export type UpdateUserStoryResponse = UpdateUserStoryPath['responses']['200']['content']['application/json'];
