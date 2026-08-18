@@ -1,8 +1,9 @@
 /**
  * KATA Architecture - UI Auth Setup
  *
- * Authenticates via the login page UI and intercepts the JWT token
- * using page.waitForResponse() - single authentication, no separate API call.
+ * Authenticates via the login page UI (email -> password -> signin) and
+ * intercepts the bearer session token using page.waitForResponse() - single
+ * authentication, no separate API call.
  *
  * This provides BOTH:
  * - Browser session (storageState) for UI tests
@@ -13,7 +14,7 @@
  */
 
 import type { ApiState } from '@data/types';
-import type { TokenResponse } from '@schemas/auth.types';
+import type { SigninResponse } from '@schemas/auth.types';
 
 import { writeFileSync } from 'node:fs';
 import { test as setup } from '@TestFixture';
@@ -47,7 +48,8 @@ setup('UI Setup: authenticate via UI', async ({ ui, page }) => {
   };
 
   // Set up response interception BEFORE triggering login
-  // The login UI calls /api/auth/login after successful NextAuth sign-in
+  // The login UI calls POST /v1/auth/signin (last step of the real 4-step
+  // flow — check-email happens first but carries no token)
   const tokenPromise = page.waitForResponse(
     resp => resp.url().includes(config.auth.tokenEndpoint)
       && resp.request().method() === 'POST'
@@ -55,40 +57,44 @@ setup('UI Setup: authenticate via UI', async ({ ui, page }) => {
     { timeout: 30000 },
   );
 
-  // Use LoginPage ATC - triggers NextAuth sign-in + token fetch
+  // Use LoginPage ATC - triggers the email->password->signin sequence
   await ui.login.loginSuccessfully(credentials);
   console.log('[UI Setup] UI login successful');
 
-  // Capture JWT token from intercepted response
-  console.log('[UI Setup] Intercepting token from login response...');
+  // Capture the response body — the browser session itself lives in cookies
+  // (captured via storageState below); the PAT is what any in-test API call
+  // needs for its Bearer header (session.access_token is rejected by the
+  // API — see the note on AuthApi.authenticateSuccessfully).
+  console.log('[UI Setup] Intercepting signin response...');
   const response = await tokenPromise;
-  const tokenData = (await response.json()) as TokenResponse;
+  const body = (await response.json()) as SigninResponse;
+  const { pat } = body;
 
   // Attach to Allure for debugging
   await attachRequestResponseToAllure({
     url: response.url(),
     method: 'POST',
-    responseBody: tokenData,
+    responseBody: body,
     requestBody: { email: credentials.email, password: '***' },
   });
 
-  // Verify token was obtained
-  if (!tokenData?.access_token) {
-    throw new Error('Token response missing access_token');
+  // Verify a PAT was obtained
+  if (!pat?.token) {
+    throw new Error('Signin response missing pat.token');
   }
 
-  console.log('[UI Setup] Token intercepted successfully');
+  console.log('[UI Setup] Session intercepted successfully');
 
   // Save storage state (cookies + localStorage) for UI tests
   await page.context().storageState({ path: storageStateFile });
   console.log(`[UI Setup] Storage state saved to ${storageStateFile}`);
 
-  // Save the token for API calls within E2E tests
+  // Save the PAT for API calls within E2E tests
   const apiState: ApiState = {
-    token: tokenData.access_token,
-    tokenType: tokenData.token_type,
-    expiresIn: tokenData.expires_in,
-    refreshToken: tokenData.refresh_token ?? null,
+    token: pat.token,
+    tokenType: 'Bearer',
+    expiresIn: config.auth.tokenLifetimeSeconds,
+    refreshToken: null, // PATs don't refresh — re-run the UI setup to mint a new one
     source: 'ui-login',
     createdAt: new Date().toISOString(),
   };

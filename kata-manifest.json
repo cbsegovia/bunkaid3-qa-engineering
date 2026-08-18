@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "generatedAt": "2026-07-15T02:23:40.457Z",
+  "generatedAt": "2026-08-17T01:47:32.719Z",
   "components": {
     "api": [
       {
@@ -9,72 +9,121 @@
         "relativePath": "tests\\components\\api\\AuthApi.ts",
         "atcs": [
           {
-            "id": "PROJ-101",
+            "id": "BK-101",
             "method": "authenticateSuccessfully",
-            "line": 73
+            "line": 101
           },
           {
-            "id": "PROJ-102",
-            "method": "loginWithInvalidCredentials",
-            "line": 112
+            "id": "BK-102",
+            "method": "signInWithInvalidCredentials",
+            "line": 137
           }
         ]
       },
       {
-        "name": "ExampleApi",
-        "file": "ExampleApi.ts",
-        "relativePath": "tests\\components\\api\\ExampleApi.ts",
+        "name": "TraceabilityApi",
+        "file": "TraceabilityApi.ts",
+        "relativePath": "tests\\components\\api\\TraceabilityApi.ts",
         "atcs": [
           {
-            "id": "PROJ-101",
-            "method": "createResourceSuccessfully",
-            "line": 57
+            "id": "BK-107",
+            "method": "getStoryChainSuccessfully",
+            "line": 61
           },
           {
-            "id": "PROJ-102",
-            "method": "createResourceWithInvalidData",
-            "line": 88
+            "id": "BK-109",
+            "method": "expectMismatchedPairNotFound",
+            "line": 118
           },
           {
-            "id": "PROJ-103",
-            "method": "getResourceSuccessfully",
-            "line": 113
+            "id": "BK-335",
+            "method": "expectUnauthenticatedRejection",
+            "line": 84
+          }
+        ]
+      },
+      {
+        "name": "UserStoryApi",
+        "file": "UserStoryApi.ts",
+        "relativePath": "tests\\components\\api\\UserStoryApi.ts",
+        "atcs": [
+          {
+            "id": "BK-105",
+            "method": "getUserStorySuccessfully",
+            "line": 130
+          },
+          {
+            "id": "BK-106",
+            "method": "getUserStoryNotFound",
+            "line": 147
           }
         ]
       }
     ],
     "ui": [
       {
-        "name": "ExamplePage",
-        "file": "ExamplePage.ts",
-        "relativePath": "tests\\components\\ui\\ExamplePage.ts",
-        "atcs": [
-          {
-            "id": "PROJ-101",
-            "method": "submitFormWithValidData",
-            "line": 99
-          },
-          {
-            "id": "PROJ-102",
-            "method": "submitFormWithInvalidEmail",
-            "line": 122
-          }
-        ]
-      },
-      {
         "name": "LoginPage",
         "file": "LoginPage.ts",
         "relativePath": "tests\\components\\ui\\LoginPage.ts",
         "atcs": [
           {
-            "id": "PROJ-101",
+            "id": "BK-103",
             "method": "loginSuccessfully",
-            "line": 84
+            "line": 99
           },
           {
-            "id": "PROJ-102",
+            "id": "BK-104",
             "method": "loginWithInvalidCredentials",
-            "line": 101
+            "line": 118
+          }
+        ]
+      },
+      {
+        "name": "SnapshotDocumentPage",
+        "file": "SnapshotDocumentPage.ts",
+        "relativePath": "tests\\components\\ui\\SnapshotDocumentPage.ts",
+        "atcs": [
+          {
+            "id": "BK-332",
+            "method": "openOffline",
+            "line": 70
+          },
+          {
+            "id": "BK-333",
+            "method": "expectSnapshotUnchangedAfterMutation",
+            "line": 109
+          }
+        ]
+      },
+      {
+        "name": "TraceabilityPage",
+        "file": "TraceabilityPage.ts",
+        "relativePath": "tests\\components\\ui\\TraceabilityPage.ts",
+        "atcs": [
+          {
+            "id": "BK-110",
+            "method": "expectChainRenders",
+            "line": 67
+          },
+          {
+            "id": "BK-111",
+            "method": "expectNoStorySelectedPrompt",
+            "line": 80
+          },
+          {
+            "id": "BK-331",
+            "method": "exportSnapshot",
+            "line": 100
+          },
+          {
+            "id": "BK-334",
+            "method": "expectAnonymousRedirectToLogin",
+            "line": 125
+          },
+          {
+            "id": "BK-336",
+            "method": "expectNoShareAffordance",
+            "line": 156
           }
         ]
       }
@@ -82,10 +131,10 @@
   },
   "preconditions": [],
   "summary": {
-    "totalComponents": 4,
-    "totalATCs": 9,
-    "apiComponents": 2,
-    "uiComponents": 2,
+    "totalComponents": 6,
+    "totalATCs": 16,
+    "apiComponents": 3,
+    "uiComponents": 3,
     "preconditionModules": 0
   }
 }

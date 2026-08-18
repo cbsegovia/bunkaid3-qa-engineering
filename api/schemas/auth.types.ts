@@ -1,96 +1,57 @@
 /**
  * KATA Framework - Type Facade: Auth Domain
  *
- * Type definitions for authentication endpoints.
- * When openapi-types.ts is available (after `bun run api:sync`),
- * migrate Custom Types to Schema/Endpoint Types using @openapi imports.
+ * Bunkai TMS auth is a 4-step, cookie-session flow (Supabase SSR) — NOT a
+ * single password-form-returns-JWT flow. See config/variables.ts `auth` block
+ * for the full sequence. Types below mirror the real OpenAPI contract synced
+ * from https://staging-upexbunkai.vercel.app/api/openapi.
  *
  * Consumed by: tests/components/api/AuthApi.ts
- *
- * Migration example:
- *   import type { components, paths } from '@openapi';
- *   export type TokenResponse = components['schemas']['TokenResponse'];
- *   type LoginPath = paths['/api/auth/login']['post'];
- *   export type LoginRequest = LoginPath['requestBody']['content']['application/json'];
  */
+
+import type { components, paths } from '@openapi';
 
 // ============================================================================
 // Schema Types (from components.schemas)
 // ============================================================================
 
-// TODO: Uncomment after running `bun run api:sync` and replace Custom Types below
-// import type { components, paths } from '@openapi';
-// export type TokenResponse = components['schemas']['TokenResponse'];
-// export type UserInfo = components['schemas']['UserInfoModel'];
+export type ErrorEnvelope = components['schemas']['ErrorEnvelope'];
 
 // ============================================================================
-// Endpoint Types - POST /api/auth/login
+// Endpoint Types — POST /api/v1/auth/check-email
 // ============================================================================
 
-// TODO: Uncomment after running `bun run api:sync`
-// type LoginPath = paths['/api/auth/login']['post'];
-// export type LoginPayload = LoginPath['requestBody']['content']['application/json'];
-// export type LoginSuccessResponse = LoginPath['responses']['200']['content']['application/json'];
-// export type LoginErrorResponse = LoginPath['responses']['401']['content']['application/json'];
+type CheckEmailPath = paths['/api/v1/auth/check-email']['post'];
+export type CheckEmailPayload = CheckEmailPath['requestBody']['content']['application/json'];
+export type CheckEmailResponse = CheckEmailPath['responses']['200']['content']['application/json'];
 
 // ============================================================================
-// Endpoint Types - GET /api/auth/me
+// Endpoint Types — POST /api/v1/auth/signin
 // ============================================================================
 
-// TODO: Uncomment after running `bun run api:sync`
-// type MePath = paths['/api/auth/me']['get'];
-// export type MeResponse = MePath['responses']['200']['content']['application/json'];
+type SigninPath = paths['/api/v1/auth/signin']['post'];
+export type SigninPayload = SigninPath['requestBody']['content']['application/json'];
+export type SigninResponse = SigninPath['responses']['200']['content']['application/json'];
 
 // ============================================================================
-// Custom Types (pre-sync definitions — replace with OpenAPI types when available)
+// Endpoint Types — POST /api/v1/auth/signup
 // ============================================================================
 
-/**
- * Login request payload.
- * TODO: Replace with OpenAPI endpoint type after sync.
- */
-export interface LoginPayload {
-  email: string
-  password: string
-}
+type SignupPath = paths['/api/v1/auth/signup']['post'];
+export type SignupPayload = SignupPath['requestBody']['content']['application/json'];
+export type SignupResponse = SignupPath['responses']['202']['content']['application/json'];
 
-/**
- * Token response from authentication endpoints.
- * Compatible with IdentityServer4 token response.
- * TODO: Replace with OpenAPI schema type after sync.
- */
-export interface TokenResponse {
-  access_token: string
-  token_type: string
-  expires_in: number
-  refresh_token?: string
-  scope?: string
-}
+// ============================================================================
+// Endpoint Types — POST /api/v1/auth/confirm (OTP, signup only — never on repeat sign-in)
+// ============================================================================
 
-/**
- * Error response for failed authentication.
- * TODO: Replace with OpenAPI endpoint type after sync (if documented in spec).
- */
-export interface AuthErrorResponse {
-  error: string
-  statusCode?: number
-  identityServerError?: {
-    error: string
-    error_description: string
-  }
-  hint?: string
-}
+type ConfirmPath = paths['/api/v1/auth/confirm']['post'];
+export type ConfirmPayload = ConfirmPath['requestBody']['content']['application/json'];
+export type ConfirmResponse = ConfirmPath['responses']['200']['content']['application/json'];
 
-/**
- * User info response from /api/auth/me.
- * TODO: Replace with OpenAPI endpoint type after sync.
- */
-export interface UserInfoResponse {
-  user: {
-    id: string
-    email: string
-    name: string
-    createdAt: string
-    updatedAt: string
-  }
-}
+// ============================================================================
+// Endpoint Types — GET /api/v1/me
+// ============================================================================
+
+type MePath = paths['/api/v1/me']['get'];
+export type MeResponse = MePath['responses']['200']['content']['application/json'];

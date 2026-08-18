@@ -25,33 +25,36 @@ const apiStateFile = config.auth.apiStatePath;
  */
 setup('API Setup: authenticate via API', async ({ api }) => {
   console.log('[API Setup] Starting API authentication...');
-  console.log(`[API Setup] Target: ${config.apiUrl}${config.auth.loginEndpoint}`);
+  console.log(`[API Setup] Target: ${config.apiUrl}${config.auth.signinEndpoint}`);
 
-  // Use AuthApi ATC (UPEX Dojo uses 'email' field)
+  // Use AuthApi ATC — Bunkai's `signin` field is 'email' too, but the
+  // response is nested under `session` (cookie-session flow, not flat JWT)
   const credentials = {
     email: config.testUser.email,
     password: config.testUser.password,
   };
-  const [response, tokenData] = await api.auth.authenticateSuccessfully(credentials);
+  const [response, body] = await api.auth.authenticateSuccessfully(credentials);
+  // The PAT (not session.access_token) is what authenticates over Bearer — see
+  // the note on AuthApi.authenticateSuccessfully for why.
+  const { pat } = body;
 
   // Attach to Allure for debugging
   await attachRequestResponseToAllure({
     url: response.url(),
     method: 'POST',
-    responseBody: tokenData,
+    responseBody: body,
     requestBody: { email: credentials.email, password: '***' },
   });
 
   console.log('[API Setup] Authentication successful');
-  console.log(`[API Setup] Token type: ${tokenData.token_type}`);
-  console.log(`[API Setup] Expires in: ${tokenData.expires_in} seconds`);
+  console.log(`[API Setup] PAT scopes: ${pat.scopes.join(', ')}`);
 
   // Save token to file for use by integration tests
   const apiState: ApiState = {
-    token: tokenData.access_token,
-    tokenType: tokenData.token_type,
-    expiresIn: tokenData.expires_in,
-    refreshToken: tokenData.refresh_token ?? null,
+    token: pat.token,
+    tokenType: 'Bearer',
+    expiresIn: config.auth.tokenLifetimeSeconds,
+    refreshToken: null, // PATs don't refresh — re-run signin to mint a new one
     source: 'api-login',
     createdAt: new Date().toISOString(),
   };
