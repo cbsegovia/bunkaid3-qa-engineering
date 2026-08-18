@@ -20,6 +20,11 @@
  * NOTE: `@atc('BK-110'/'BK-111')` below are PLACEHOLDER IDs — no real Jira
  * Test issue exists yet for these UI flows. The real BK-45 Test issues
  * (BK-445..BK-464) are the ones that should eventually replace them.
+ *
+ * `exportSnapshot` / `expectAnonymousRedirectToLogin` / `expectNoShareAffordance`
+ * below carry REAL BK-50 TC IDs (BK-331/BK-334/BK-336) — this is the same
+ * screen BK-50's export feature lives on top of, so its ATCs extend this
+ * component instead of forking a duplicate one (see BK-50 automation-plan.md).
  */
 
 import type { TestContextOptions } from '@TestContext';
@@ -78,5 +83,84 @@ export class TraceabilityPage extends UiBase {
 
     await expect(this.page.locator('[data-testid="traceability-no-story-selected"]')).toBeVisible({ timeout: 10000 });
     await expect(this.page.locator('[data-testid="traceability-chain-view"]')).not.toBeVisible();
+  }
+
+  /**
+   * ATC: Export the current chain as a self-contained snapshot document -
+   * expects a file download whose suggested filename carries the project
+   * slug and a second-granular export timestamp (BK-50 TC01, D26 pattern).
+   *
+   * Awaits the `download` event concurrently with the click (`Promise.all`)
+   * rather than clicking then polling for a file — the latter is the flaky
+   * pattern under this repo's `retries: 0` policy.
+   *
+   * @param saveTo - filesystem path to save the downloaded document to
+   * @returns the path the snapshot was saved to
+   */
+  @atc('BK-331')
+  async exportSnapshot(saveTo: string): Promise<string> {
+    const [download] = await Promise.all([
+      this.page.waitForEvent('download'),
+      this.page.locator('[data-testid="traceability-export-button"]').click(),
+    ]);
+
+    expect(download.suggestedFilename()).toMatch(/^trace-.+-\d{8}-\d{6}\.html$/);
+
+    await download.saveAs(saveTo);
+
+    return saveTo;
+  }
+
+  /**
+   * ATC: Open the traceability screen with no authenticated session -
+   * expects a redirect to `/login` carrying the original path in `next`,
+   * with no chain markup rendered before the redirect (BK-50 TC04).
+   *
+   * Opens a FRESH browser context with no `storageState` — the shared
+   * `page` from the `ui`/`test` fixtures is already authenticated, so the
+   * anonymous caller needs its own context, not a cleared one.
+   *
+   * @param path - the traceability path to request, e.g. `/projects/{slug}/traceability?story={id}`
+   */
+  @atc('BK-334')
+  async expectAnonymousRedirectToLogin(path: string): Promise<void> {
+    const browser = this.page.context().browser();
+    if (!browser) {
+      throw new Error('expectAnonymousRedirectToLogin requires a browser-backed page context.');
+    }
+
+    const anonymousContext = await browser.newContext();
+    try {
+      const anonymousPage = await anonymousContext.newPage();
+      await anonymousPage.goto(this.buildUrl(path));
+
+      await anonymousPage.waitForURL(/\/login(\?|$)/, { timeout: 10000 });
+      const redirectUrl = new URL(anonymousPage.url());
+      expect(redirectUrl.pathname).toBe('/login');
+      expect(redirectUrl.searchParams.get('next')).toBe(path);
+
+      await expect(anonymousPage.locator('[data-testid="traceability-chain-view"]')).not.toBeVisible();
+    }
+    finally {
+      await anonymousContext.close();
+    }
+  }
+
+  /**
+   * ATC: Enumerate the screen's controls - expects "Export snapshot" to be
+   * the only mutating control, with no share / publish / copy-link
+   * affordance anywhere (BK-50 TC06, Option E scope guard, comments
+   * 12238/12239). Retire this test deliberately — never weaken it — the day
+   * link-sharing ships.
+   */
+  @atc('BK-336')
+  async expectNoShareAffordance(): Promise<void> {
+    await expect(this.page.locator('[data-testid="traceability-export-button"]')).toBeVisible();
+
+    const shareAffordanceCount = await this.page.locator(
+      '[data-testid*="share" i], [data-testid*="publish" i], [data-testid*="copy-link" i], '
+      + '[data-testid*="public-link" i], button:has-text("Share"), button:has-text("Publish"), a:has-text("Share")',
+    ).count();
+    expect(shareAffordanceCount, 'expected no share/publish/copy-link control on the traceability screen').toBe(0);
   }
 }
