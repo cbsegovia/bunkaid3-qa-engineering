@@ -16,8 +16,9 @@
 
 import type { TestContextOptions } from '@TestContext';
 
-import { ExamplePage } from '@ui/ExamplePage';
 import { LoginPage } from '@ui/LoginPage';
+import { SnapshotDocumentPage } from '@ui/SnapshotDocumentPage';
+import { TraceabilityPage } from '@ui/TraceabilityPage';
 import { UiBase } from '@ui/UiBase';
 
 // ============================================
@@ -28,14 +29,18 @@ export class UiFixture extends UiBase {
   /** Login page component - handles authentication flows */
   readonly login: LoginPage;
 
-  /** Example component - reference only */
-  readonly example: ExamplePage;
+  /** Traceability page component - BK-45 evidence chain view, BK-50 export */
+  readonly traceability: TraceabilityPage;
+
+  /** Snapshot document component - the BK-50 exported document itself */
+  readonly snapshot: SnapshotDocumentPage;
 
   constructor(options: TestContextOptions) {
     super(options);
 
     // All components receive the same options (same page context)
     this.login = new LoginPage(options);
-    this.example = new ExamplePage(options);
+    this.traceability = new TraceabilityPage(options);
+    this.snapshot = new SnapshotDocumentPage(options);
   }
 }

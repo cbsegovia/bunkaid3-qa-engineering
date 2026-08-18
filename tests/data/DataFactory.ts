@@ -9,7 +9,7 @@
  *   - Import directo: import { DataFactory } from '@DataFactory'
  */
 
-import type { TestBooking, TestCredentials, TestHotel, TestUser } from './types';
+import type { TestCredentials, TestUser, TestUserStory } from './types';
 
 import { faker } from '@faker-js/faker';
 
@@ -75,33 +75,17 @@ export class DataFactory {
   }
 
   // ============================================
-  // PROJECT-SPECIFIC (example structure)
+  // PROJECT-SPECIFIC (Bunkai TMS)
   // ============================================
 
   /**
-   * Genera datos de Hotel para testing
-   * TODO: Expandir cuando se necesite
+   * Genera datos de User Story para testing.
+   * `moduleId` no tiene default razonable (depende de fixtures reales
+   * seed'eadas en staging) — siempre debe pasarse vía overrides.
    */
-  static createHotel(overrides?: Partial<TestHotel>): TestHotel {
+  static createUserStory(overrides: Partial<TestUserStory> & { moduleId: string }): TestUserStory {
     return {
-      name: `Test Hotel ${faker.location.city()}`,
-      organizationId: faker.number.int({ min: 1, max: 100 }),
-      invoiceCap: faker.number.int({ min: 1000, max: 50000 }),
-      ...overrides,
-    };
-  }
-
-  /**
-   * Genera datos de Booking para testing
-   * TODO: Expandir cuando se necesite
-   */
-  static createBooking(overrides?: Partial<TestBooking>): TestBooking {
-    return {
-      confirmationNumber: `CONF-${faker.string.alphanumeric(8).toUpperCase()}`,
-      hotelId: faker.number.int({ min: 1, max: 1000 }),
-      stayValue: faker.number.float({ min: 100, max: 5000, fractionDigits: 2 }),
-      checkInDate: faker.date.future().toISOString().split('T')[0],
-      emailHash: faker.string.alphanumeric(32),
+      title: `Test Story ${faker.lorem.words(4)}`,
       ...overrides,
     };
   }
