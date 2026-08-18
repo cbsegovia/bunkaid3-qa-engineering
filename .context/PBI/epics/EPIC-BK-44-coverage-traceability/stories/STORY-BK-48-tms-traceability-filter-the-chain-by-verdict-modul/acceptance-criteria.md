@@ -1,6 +1,6 @@
 # BK-48 — Acceptance Criteria
 
-> Jira field: `customfield_10063` · [View in Jira](https://jira.upexgalaxy.com/browse/BK-48)
+> Jira field: `customfield_10097` · [View in Jira](https://jira.upexgalaxy.com/browse/BK-48)
 
 ## Original AC1 — Filter the chain to failures only
 

@@ -59,6 +59,7 @@
 | Session Start | completed | 2026-06-26 |
 | Stage 1 — Planning | completed | 2026-06-26 |
 | Stage 2 — Execution | completed | 2026-06-28 |
+| Stage 2 — Retest | completed | 2026-08-07 |
 | Stage 3 — Reporting | pending | — |
 
 ## Bugs Found
@@ -164,3 +165,74 @@ MCP `staging-dhhub` has no credentials — `.env` fields `DBHUB_TYPE`, `DBHUB_HO
 - 1 / 16: FAILED (TC11 — BUG-1)
 - 2 / 18: BLOCKED (TC02, TC03 — 0-step/0-assertion test data not available)
 - BUG-2 (MAJOR) blocks user-facing DoD independently of TC results
+
+---
+
+## Stage 2 — Retest (2026-08-07)
+
+**Trigger:** BK-184, BK-185, BK-175 all confirmed Cerrada (verified via `acli jira workitem view` before starting — all three read `status.name: "Cerrada"`). BK-23 itself still `BLOCKED` at dispatch start.
+
+**Auth:** magic-link OTP via `bunkai-staging-userbunk@olkacoraug.resend.app` — confirmed working end-to-end (BK-175 fix verified live: email was a real clickable "Your sign-in link", not a signup code). Resend inbound inbox read via `resend emails receiving list/get`.
+
+**Tool gap found:** `bun run api:login staging` fails 401 against the real staging test account. Root cause: `config/variables.ts` `envDataMap.staging` hardcodes `https://dojo.upexgalaxy.com`, which is a DIFFERENT deployment than `.agents/project.yaml`'s `environments.staging.web_url` (`https://staging-upexbunkai.vercel.app`) — the one this whole QA session is scoped to and the one BK-175/BK-184/BK-185 were verified against. Worked around by extracting the authenticated session's Supabase JWT was tried first (rejected — `lib/api/middleware/bearer.ts` only accepts `bk_pat_*` PATs, not raw Supabase JWTs) then abandoned in favor of running authenticated `fetch()` calls from inside the logged-in browser session via `playwright-cli eval` (cookie auth, which the OpenAPI spec documents as accepted: `security: [{cookieAuth:[]},{bearerAuth:[]}]`, confirmed in `lib/api/principal.ts resolveIdentity()`). Non-blocking, but flag for whoever owns `config/variables.ts` — the two config sources have drifted and any future `api:login`-based session will silently target the wrong host.
+
+### TC11 retest — FAILED (regression, not the expected fix)
+
+Per the code (`app/api/v1/atcs/[id]/duplicate/route.ts`, `lib/atcs/validation.ts` — unchanged since the single `80a4fe6` commit) the accepted field is `title`. BK-184 was closed with root cause "Requirement Error" (spec corrected to match code, no code change). Retest sent all three probes against source ATC `9bb34acc-8d27-49d0-a2d8-227a4c77500c`:
+
+| Probe | Sent | Applied title | Verdict |
+|---|---|---|---|
+| `{"title":"ZZZZ-DISTINCT-TITLE-CHECK-ZZZZ"}` | `title` only | `"Login happy path (copy)"` (default — ignored) | title field silently ignored |
+| `{"new_title":"YYYY-NEWTITLE-FIELD-CHECK-YYYY"}` | `new_title` only | `"YYYY-NEWTITLE-FIELD-CHECK-YYYY"` | new_title field applied |
+| `{"title":"AAAA","new_title":"BBBB"}` | both | `"BBBB"` | new_title wins over title |
+
+**Finding:** live staging (`staging-upexbunkai.vercel.app`) currently honours `new_title` and silently ignores `title` — the ORIGINAL pre-BK-184 bug behavior, and the exact opposite of what the checked-out backend repo source reads. This is either an undeployed-fix / stale-deployment gap, or BK-184's "Requirement Error" closure does not reflect current live behavior. TC11 (which retests the `title` field per BK-184's resolution) is scored FAILED per the dispatch's own rule ("FAIL if... the field name changed to something else undocumented"). TC10 would also now FAIL if re-run (regression from the 2026-06-28 PASS).
+
+### TC10/TC07/TC08 regression
+
+| TC | Check | Result |
+|---|---|---|
+| TC07 | POST no body → default title | PASSED — `"Login happy path (copy)"` |
+| TC08 | POST empty body `{}` → default title | PASSED — `"Login happy path (copy)"` |
+| TC10 | `title` field custom title | **REGRESSED to FAIL** — see TC11 table above (same probe) |
+
+### UI Duplicate retest (BK-185) — PASSED, both entry points
+
+| Entry point | Result | Evidence |
+|---|---|---|
+| ATC detail-view toolbar "Duplicate" button | 201, redirected to `/atcs/{new_id}`, title + 3 steps + 3 assertions rendered correctly, 0 console errors | `evidence/BK-23-retest-ui-duplicate-detail-button.png` |
+| ATC explorer right-click context menu → "Duplicate ⌘D" | 201, redirected to `/atcs/{new_id}`, same content verified | `evidence/BK-23-retest-ui-duplicate-context-menu.png`, `evidence/BK-23-retest-ui-duplicate-explorer-result.png` |
+
+Both call `POST /atcs/{id}/duplicate` with body `{}` (no custom-title UI affordance in either entry point — duplicate-then-rename is the only UI path for a custom title, confirmed by reading `project-explorer.tsx handleDuplicateAtc`).
+
+### TC02 — DESCOPED (not a defect)
+
+Probed `POST /api/v1/atcs` with `steps: []` → `422 validation_failed` (`steps: too_small, minimum 1`). Confirmed in `lib/atcs/validation.ts`: `steps: z.array(AtcStepInputSchema).min(1)`. A 0-step ATC cannot exist in this system at the API layer OR the UI layer — creation is structurally blocked before duplication is ever reachable. TC02 tests a state the system cannot produce; descoped as not-applicable rather than left BLOCKED indefinitely.
+
+### TC03 — PASSED (previously BLOCKED, now executable)
+
+Assertions ARE optional at creation (`assertions: z.array(...).optional().default([])`), so a 0-assertion ATC is reachable. Created source `593f035f-2fe7-49e9-bc9b-6d084cd3a26c` (1 step, 0 assertions) → duplicated → copy `f2db6645-799e-4c42-aea7-f56db9281b2a`: 201, 1 step copied verbatim, `assertions: []`, no crash, default title `"Zero-assertion source for TC03 (copy)"` applied. Evidence: `evidence/BK-23-retest-tc03-zero-assertion-copy.png`.
+
+### AC1 / AC4 regression sanity (light pass)
+
+| Check | Method | Result |
+|---|---|---|
+| AC1 — steps + assertions copied | Fresh POST duplicate (no body) on source `9bb34acc-...` | PASSED — 3 steps + 3 assertions copied to new id `a944b13c-...` |
+| AC4 — copy independence | PATCH copy `a944b13c-...` step 1 → `"Open the login page [EDITED-COPY-ONLY]"` (full-replace body), then loaded source `9bb34acc-...` | PASSED — source step 1 still reads `"Open the login page"`, unaffected. Evidence: `evidence/BK-23-retest-ac4-source-unchanged.png` |
+| TC17 — non-existent source → 404 | `POST /atcs/00000000-.../duplicate` | PASSED — 404 |
+
+### DB leg — still BLOCKED (carried forward, unchanged)
+
+`DBHUB_TYPE/HOST/PORT/DATABASE/USER/PASSWORD` all still empty in `.env`. Same gap as 2026-06-28. Not attempted this pass per dispatch instruction. Copy-independence (AC4) verified only via API/UI observation, not at the SQL/row level.
+
+### Stage 2 Retest Verdict
+
+**FAIL — BK-23 remains blocked**, but for a DIFFERENT reason than the original pass:
+
+- BK-185 (no UI Duplicate action): **CONFIRMED FIXED** — both entry points work end-to-end.
+- BK-184 (title field): **REGRESSED / NOT FIXED ON THIS ENVIRONMENT** — `title` field silently ignored again; `new_title` (the originally-reported-wrong field) is now the one that works. TC11 FAILS.
+- TC02: DESCOPED (structurally not-applicable, documented above).
+- TC03: PASSED (no longer blocked).
+- AC1/AC4/TC17 regression: all PASSED, no collateral damage from BK-185's fix.
+- DB leg: carried forward BLOCKED, unchanged.
+- Tooling: `bun run api:login staging` targets a stale/wrong host (`dojo.upexgalaxy.com` vs `.agents/project.yaml`'s `staging-upexbunkai.vercel.app`) — non-blocking but flagged.

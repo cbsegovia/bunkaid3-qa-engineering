@@ -3,9 +3,10 @@
 **Jira Key:** [BK-46](https://jira.upexgalaxy.com/browse/BK-46)
 **Epic:** [BK-44](https://jira.upexgalaxy.com/browse/BK-44) (Coverage & Traceability)
 **Type:** Historia
-**Status:** Shift-Left QA
+**Status:** Ready For QA
 **Priority:** Medium
-**Story Points:** -
+**Story Points:** 8
+**Web Link:** https://staging-upexbunkai.vercel.app/
 
 ---
 
@@ -17,22 +18,37 @@ As a QA Lead, I want to see the acceptance criteria and modules that have no tes
 
 ---
 
+## Fields
+
+> Each rich-text field is a separate file in this folder.
+
+- [Acceptance Criteria](./acceptance-criteria.md)
+- [Scope](./scope.md)
+- [Out Of Scope](./out-of-scope.md)
+- [Acceptance Test Plan (QA)](./acceptance-test-plan.md)
+
+---
+
 ## Traceability
 
 ### Epics (2)
 
-- [BK-13](https://jira.upexgalaxy.com/browse/BK-13): ATC Library (Atomic Test Components) _(Planificación)_
+- [BK-13](https://jira.upexgalaxy.com/browse/BK-13): ATC Library (Acceptance Test Cases) _(Planificación)_
 - [BK-30](https://jira.upexgalaxy.com/browse/BK-30): Manual Execution & Runs _(Planificación)_
+
+### Historia (1)
+
+- [BK-259](https://jira.upexgalaxy.com/browse/BK-259): TMS-Home | Show workspace test coverage summary _(Ready For QA)_
 
 ---
 
 ## Metadata
 
 - **Created:** 6/1/2026
-- **Updated:** 6/5/2026
+- **Updated:** 8/1/2026
 - **Reporter:** Ely
-- **Assignee:** Unassigned
-- **Labels:** new-feature
+- **Assignee:** Carlos Alberto Chiavassa
+- **Labels:** new-feature, shift-left-2026-06-26, shift-left-reviewed
 
 ---
 
