@@ -25,7 +25,14 @@ database:
 issue_tracker:
   issue_tracker: Jira # Issue tracking tool (e.g. Jira)
   issue_tracker_cli: acli # CLI command to query tickets (e.g. acli (Jira) / gh issue (GitHub)
-  atlassian_url: 'https://upexgalaxy71.atlassian.net' # Atlassian site base URL (e.g. https://company.atlassian.net) — same value as .env's ATLASSIAN_URL
+  # SOURCE OF TRUTH for the Atlassian instance. Every jira:sync-* script resolves the
+  # host from HERE first and uses .env's ATLASSIAN_URL only as a fallback (see
+  # cli/lib/atlassian-instance.ts). Inverse of project_key, on purpose: the host is
+  # project identity, not a per-developer override, and it is the value that goes stale
+  # after a site migration — a stale host silently overwrites .context/PBI/ and the
+  # .agents/*.json catalogs with another site's content. Keep it identical to .env's
+  # ATLASSIAN_URL; when they disagree the yaml wins and the scripts print a warning.
+  atlassian_url: 'https://upexgalaxy71.atlassian.net' # Atlassian site base URL (e.g. https://company.atlassian.net)
 
 testing:
   default_env: staging # Default testing environment — must match a key under `environments:` (e.g. staging)
@@ -33,6 +40,28 @@ testing:
 
 qa:
   formal_blocked_gate: true # When true and the substrate exposes a `blocked` story status, FAILED stories dispatch `defect_reported` (in_test -> blocked). When false (or no `blocked` slug), the skill leaves the story in `in_test` with the linked bug — non-strict fallback. See sprint-testing/references/sprint-orchestration.md Briefing 4 Step 5.
+  # QA process epics — buckets that hold QA artifacts so they never pollute product epics/roadmap.
+  # FOUR QA-process epics form the QA-governance cluster: Test Plans parent to `master_test_plan_epic`;
+  # Test (TC) issues parent to `test_repository_epic`; Test Executions/Preconditions/Test Sets parent to
+  # `test_artifacts_epic`; Bug/Defect/Improvement parent to `defect_epic`.
+  # Skills resolve the epic by NAME (the methodology convention shipped below) and find-or-create it,
+  # caching the discovered `*.key` here. NEVER parent a quality issue to a product/dev epic.
+  # Read directly by skills (not {{VAR}} tokens) → skipped by vars:check, like git_strategy leaves.
+  # Doctrine: .claude/skills/agentic-qa-core/references/defect-management-doctrine.md (Part 4).
+  qa_epics:
+    master_test_plan_epic:
+      name: QA Master Test Plan # the MTP — parent of every Test Plan (FTP/STP/ATP); description mirrors
+      # .context/master-test-plan.md + points to the official QA repo; cross-linked to the 3 sibling QA epics
+      key: null # discovered/created at runtime, then cached here (e.g. PROJ-100)
+    test_repository_epic:
+      name: QA Test Repository # convention name; holds every Test (TC) issue
+      key: BK-70 # confirmed via acli
+    test_artifacts_epic:
+      name: QA Test Artifacts # holds every Test Execution (FTR/STR/ATR), Precondition, Test Set
+      key: null # not created yet — discovered/created at runtime, then cached here
+    defect_epic:
+      name: QA Defect Management # convention name; the `QA ` prefix marks a process epic, not product
+      key: BK-183 # confirmed via acli
 
 # Per-environment config. Add/remove environments freely (production, dev, qa, uat, etc.).
 # Each environment must define ALL four keys: web_url, api_url, db_mcp, api_mcp.
