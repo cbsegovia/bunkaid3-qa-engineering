@@ -14,14 +14,14 @@
 
 import { expect, test } from '@TestFixture';
 
-test.describe('UPEX-200: Dashboard', { tag: ['@critical'] }, () => {
+test.describe('BK-112: Dashboard', { tag: ['@critical'] }, () => {
   /**
    * @critical - Validates Global Setup authentication
    *
    * This test verifies that the authenticated session from e2e-setup
    * is correctly loaded and allows access to protected pages.
    */
-  test('UPEX-200: should load dashboard with authenticated session', async ({ page }) => {
+  test('BK-112: should load dashboard with authenticated session', async ({ page }) => {
     // Navigate to home/dashboard - should work because we're authenticated
     await page.goto('/');
 
@@ -38,11 +38,11 @@ test.describe('UPEX-200: Dashboard', { tag: ['@critical'] }, () => {
    * Validates that the test user info is accessible via API.
    * Uses the same session from the browser to verify API access.
    */
-  test('UPEX-200: should access user info via API with session token', async ({ test: fixture }) => {
+  test('BK-112: should access user info via API with session token', async ({ test: fixture }) => {
     // Use helper (not ATC) — this is a read-only verification
     const [response, userInfo] = await fixture.api.auth.getCurrentUser();
 
-    // Test-level assertions (UPEX Dojo format: { user: {...} })
+    // Test-level assertions (Bunkai /v1/me format: { user, workspaces, ... })
     expect(response.ok()).toBe(true);
     expect(response.status()).toBe(200);
     expect(userInfo.user.email).toBeDefined();

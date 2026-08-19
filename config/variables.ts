@@ -112,8 +112,8 @@ const envDataMap: Record<
     user: userCredentialsMap.local,
   },
   staging: {
-    base: 'https://dojo.upexgalaxy.com',
-    api: 'https://dojo.upexgalaxy.com/api',
+    base: 'https://staging-upexbunkai.vercel.app',
+    api: 'https://staging-upexbunkai.vercel.app/api',
     user: userCredentialsMap.staging,
   },
 };
@@ -128,12 +128,24 @@ export const config = {
   baseUrl: envData.base,
   apiUrl: envData.api,
 
-  // Authentication config (UPEX Dojo endpoints - relative to apiUrl)
+  // Authentication config (Bunkai TMS — cookie-session via Supabase SSR, NOT a
+  // single password-form-returns-JWT flow. Real sequence, confirmed against
+  // /project-discovery Phase 3 (../upex-bunkai-tms):
+  //   1. POST {checkEmailEndpoint} {email}
+  //        -> existing account: continue to step 2 (signin)
+  //        -> new account: continue to step 3 (signup) + OTP confirm (step 4)
+  //   2. POST {signinEndpoint} {email, password} -> 200, sets session cookies
+  //   3. POST {signupEndpoint} {email, password} -> 202 unconfirmed (first-time account setup only)
+  //   4. POST {confirmEndpoint} {email, token} -> confirms OTP (one-time only, never on repeat sign-in)
+  // A test account created + confirmed once needs only step 1+2 on every later run.
   auth: {
-    loginEndpoint: '/auth/login',
-    tokenEndpoint: '/auth/login', // Endpoint to intercept for token (used by page.waitForResponse)
-    meEndpoint: '/auth/me',
-    tokenLifetimeSeconds: 86400, // 24 hours (1 day)
+    checkEmailEndpoint: '/v1/auth/check-email',
+    signinEndpoint: '/v1/auth/signin',
+    signupEndpoint: '/v1/auth/signup',
+    confirmEndpoint: '/v1/auth/confirm',
+    tokenEndpoint: '/v1/auth/signin', // Endpoint to intercept for session (used by page.waitForResponse) — sets cookies, no token in body
+    meEndpoint: '/v1/me', // confirmed against synced OpenAPI contract (api/openapi-types.ts) — NOT /v1/auth/me
+    tokenLifetimeSeconds: 86400, // 24 hours — Supabase session default; not independently confirmed, verify in Phase 5
     // Storage paths for authenticated sessions
     storageStatePath: '.auth/user.json',
     apiStatePath: '.auth/api-state.json',
