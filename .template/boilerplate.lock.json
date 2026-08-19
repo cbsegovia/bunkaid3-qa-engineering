@@ -3,13 +3,13 @@
   "templateRepo": "upex-galaxy/agentic-qa-boilerplate",
   "templateCommit": "",
   "perComponentCommit": {
-    "skills": "78597763963061453470eebd872be393157f2adc",
-    "commands": "78597763963061453470eebd872be393157f2adc",
-    "scripts": "78597763963061453470eebd872be393157f2adc",
-    "docs": "78597763963061453470eebd872be393157f2adc",
+    "skills": "a31b6e1908ee69b224042d7e7a07c7f3efbebaa8",
+    "commands": "a31b6e1908ee69b224042d7e7a07c7f3efbebaa8",
+    "scripts": "a31b6e1908ee69b224042d7e7a07c7f3efbebaa8",
+    "docs": "a31b6e1908ee69b224042d7e7a07c7f3efbebaa8",
     "cli": "92478af0100187cddace8618a427a7e3b4860b90",
     "vscode": "b08266ac907637e6d74539d0f396481336dcf113",
-    "husky": "b08266ac907637e6d74539d0f396481336dcf113",
+    "husky": "a31b6e1908ee69b224042d7e7a07c7f3efbebaa8",
     "agents-docs": "1ea2f055afee2518ef5e771d6a872752be73011c",
     "claude-config": "01c0a2f669c592a2bb26b5abc8d112b6eda5da40",
     "tooling": "01c0a2f669c592a2bb26b5abc8d112b6eda5da40",
@@ -45,21 +45,29 @@
   "packageJsonSync": {
     "package.json": {
       "scripts": {
-        "lastSyncedSha": "a5f848544f56080ceff9a25cade06ccd4b05a35d",
+        "lastSyncedSha": "cd5a302ce987aa16037b9337bc3a5f266298c292",
         "appliedKeys": [
           "vars:env:check",
           "env"
         ]
       },
       "devDependencies": {
-        "lastSyncedSha": "a5f848544f56080ceff9a25cade06ccd4b05a35d",
+        "lastSyncedSha": "cd5a302ce987aa16037b9337bc3a5f266298c292",
         "appliedKeys": [
           "allure-js-commons"
         ]
+      },
+      "dependencies": {
+        "lastSyncedSha": "cd5a302ce987aa16037b9337bc3a5f266298c292",
+        "appliedKeys": []
+      },
+      "lint-staged": {
+        "lastSyncedSha": "cd5a302ce987aa16037b9337bc3a5f266298c292",
+        "appliedKeys": []
       }
     }
   },
   "cliVersion": "7.0",
-  "lastSyncedAt": "2026-08-03T15:32:24.192Z",
+  "lastSyncedAt": "2026-08-13T12:10:22.803Z",
   "variableSystemVersion": 1
 }

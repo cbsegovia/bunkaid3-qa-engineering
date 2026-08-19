@@ -1,6 +1,6 @@
 # Skill Registry (auto-generated)
 
-> Generated: `2026-08-03T15:32:24.362Z`
+> Generated: `2026-08-13T12:10:26.643Z`
 > Generator: `bun scripts/build-skill-registry.ts`
 > Protocol: `.claude/skills/agentic-qa-core/references/skill-resolver.md`
 
@@ -334,7 +334,7 @@ Skills indexed: 15
 
 ## Skill: test-automation
 
-**Purpose**: Plan, write, and review automated tests following KATA (Component Action Test Architecture) on Playwright + TypeScript.
+**Purpose**: Plan, write, and review automated tests following KATA (Komponent Action Test Architecture) on Playwright + TypeScript.
 
 **Compact Rules**:
 - "All ACs covered" is the FLOOR, not the success bar. The ATC set must also cover risk-beyond-AC: invalid/boundary inputs, auth/error paths, state transitions, and anomalies the AC is silent on.
