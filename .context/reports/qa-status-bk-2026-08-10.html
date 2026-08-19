@@ -1,0 +1,505 @@
+<title>QA Status — BK tickets · 10 Aug 2026</title>
+<style>
+  /* Palette lifted from the KATA Academy design system
+     (upex-galaxy.github.io/agentic-qa-boilerplate/kata). Single dark world
+     by deliberate choice — this report is meant to sit next to that site. */
+  :root {
+    --bg: #0d1117;
+    --surface: #161b22;
+    --surface-2: #1c2230;
+    --text-1: #e6edf3;
+    --text-2: #9aa6b2;
+    --text-3: #6e7681;
+    --border: rgba(139, 148, 158, .22);
+    --border-strong: rgba(139, 148, 158, .42);
+    --good: #3fb950;
+    --warn: #d29922;
+    --bad: #f85149;
+    --a1: #ffa657;
+    --a2: #ff7b72;
+    --a3: #d2a8ff;
+    --grad: linear-gradient(120deg, var(--a1), var(--a2) 55%, var(--a3));
+    --font-ui: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+    --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Consolas, monospace;
+    --radius: 14px;
+    --radius-lg: 20px;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text-1);
+    font-family: var(--font-ui);
+    font-size: 15px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap {
+    max-width: 880px;
+    margin: 0 auto;
+    padding: 56px 24px 88px;
+    display: flex;
+    flex-direction: column;
+    gap: 40px;
+  }
+
+  /* ---- masthead ---- */
+  .masthead { display: flex; flex-direction: column; gap: 14px; }
+
+  .eyebrow {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: .18em;
+    text-transform: uppercase;
+    color: var(--text-3);
+  }
+
+  h1 {
+    margin: 0;
+    font-size: clamp(28px, 5vw, 40px);
+    line-height: 1.15;
+    letter-spacing: -.02em;
+    text-wrap: balance;
+    background: var(--grad);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .standfirst {
+    margin: 0;
+    max-width: 62ch;
+    color: var(--text-2);
+    font-size: 16px;
+  }
+
+  .meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 20px;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--text-3);
+    padding-top: 6px;
+    border-top: 1px solid var(--border);
+  }
+  .meta b { color: var(--text-2); font-weight: 500; }
+
+  /* ---- sections ---- */
+  section { display: flex; flex-direction: column; gap: 16px; }
+
+  h2 {
+    margin: 0;
+    font-size: 13px;
+    font-family: var(--font-mono);
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--text-2);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  h2::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* ---- verdict cards ---- */
+  .cards { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
+
+  .card {
+    position: relative;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px 22px 20px 26px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .card::before {
+    content: "";
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: 3px;
+    background: var(--stripe, var(--border-strong));
+  }
+  .card.pass { --stripe: var(--good); }
+  .card.hold { --stripe: var(--warn); }
+
+  .card-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+
+  .key {
+    font-family: var(--font-mono);
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text-1);
+  }
+
+  .pill {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    padding: 3px 9px;
+    border-radius: 999px;
+    white-space: nowrap;
+    border: 1px solid currentColor;
+  }
+  .pill.pass { color: var(--good); }
+  .pill.hold { color: var(--warn); }
+
+  .card p { margin: 0; color: var(--text-2); font-size: 14px; }
+  .card .score {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--text-3);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* ---- tables ---- */
+  .scroll { overflow-x: auto; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); }
+
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+
+  th {
+    text-align: left;
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--text-3);
+    font-weight: 500;
+    padding: 12px 18px;
+    background: var(--surface-2);
+    white-space: nowrap;
+  }
+
+  td {
+    padding: 12px 18px;
+    border-top: 1px solid var(--border);
+    color: var(--text-2);
+    vertical-align: top;
+  }
+  td:first-child { font-family: var(--font-mono); color: var(--text-1); white-space: nowrap; }
+
+  .state {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    white-space: nowrap;
+  }
+  .state.done { color: var(--good); }
+  .state.wait { color: var(--warn); }
+  .state.open { color: var(--bad); }
+  .state.dead { color: var(--text-3); }
+
+  /* ---- callout ---- */
+  .callout {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--a1);
+    border-radius: var(--radius);
+    padding: 20px 22px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .callout h3 {
+    margin: 0;
+    font-size: 15px;
+    color: var(--text-1);
+    letter-spacing: -.01em;
+  }
+  .callout p { margin: 0; color: var(--text-2); font-size: 14px; }
+
+  code {
+    font-family: var(--font-mono);
+    font-size: .88em;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 1px 6px;
+    color: var(--a1);
+  }
+  .callout code { color: var(--a3); }
+
+  /* ---- stat strip ---- */
+  .stats { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
+  .stat {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .stat .n {
+    font-family: var(--font-mono);
+    font-size: 26px;
+    line-height: 1.1;
+    color: var(--text-1);
+    font-variant-numeric: tabular-nums;
+  }
+  .stat .l {
+    font-size: 12.5px;
+    color: var(--text-3);
+  }
+
+  /* ---- asks ---- */
+  ul.asks { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 12px; }
+  ul.asks li {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px 20px;
+    color: var(--text-2);
+    font-size: 14px;
+  }
+  ul.asks b { color: var(--text-1); font-weight: 600; }
+
+  footer {
+    color: var(--text-3);
+    font-size: 13px;
+    border-top: 1px solid var(--border);
+    padding-top: 20px;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .card, ul.asks li, .stat { transition: border-color .18s ease; }
+    .card:hover, ul.asks li:hover, .stat:hover { border-color: var(--border-strong); }
+  }
+
+  @media (max-width: 600px) {
+    .wrap { padding: 40px 16px 64px; gap: 32px; }
+    .card-head { flex-direction: column; align-items: flex-start; gap: 6px; }
+  }
+</style>
+
+<div class="wrap">
+
+  <header class="masthead">
+    <span class="eyebrow">QA Status Report</span>
+    <h1>Two traceability defects verified and closed. Manual QA queue is empty.</h1>
+    <p class="standfirst">
+      Both fixes shipped for the Coverage &amp; Traceability epic were retested on staging today and signed off.
+      Everything assigned to me is now closed or approved, except the six BK-50 regression tests, which cannot
+      start until the test framework is pointed at Bunkai. The final section covers the full dojo history —
+      every bug filed since day one, not just what is assigned to me right now.
+    </p>
+    <div class="meta">
+      <span><b>Tester</b> Benjamin Segovia</span>
+      <span><b>Date</b> 10 Aug 2026</span>
+      <span><b>Environment</b> staging</span>
+      <span><b>Current scope</b> 19 tickets · 6 epics</span>
+      <span><b>Full history</b> 20 bugs · 2 defects · 11 epics</span>
+    </div>
+  </header>
+
+  <section>
+    <h2>Verified today</h2>
+    <p class="standfirst" style="font-size:14px">
+      Both were found while testing BK-50 and both sit in the <b>Coverage &amp; Traceability</b> component.
+      Verified against <code>origin/staging</code> at <code>e0bc02d</code>.
+    </p>
+    <div class="cards">
+      <article class="card pass">
+        <div class="card-head">
+          <span class="key">BK-329</span>
+          <span class="pill pass">Passed · Closed</span>
+        </div>
+        <p>The traceability route now enforces its <code>{projectId}</code> segment. A project/story pair that does not belong together is refused with a non-disclosing <code>404</code>, identical to the response for a story that does not exist — so the endpoint gives away nothing about what it is hiding.</p>
+        <span class="score">7 / 7 cases passed · API</span>
+      </article>
+
+      <article class="card pass">
+        <div class="card-head">
+          <span class="key">BK-330</span>
+          <span class="pill pass">Passed · Closed</span>
+        </div>
+        <p>Snapshot exports taken in the same minute no longer collide. The capture instant went second-granular everywhere it prints — filename, header, footer and toast — so two exports are distinguishable to an auditor, not just to the filesystem.</p>
+        <span class="score">8 / 8 cases passed · unit + code review</span>
+      </article>
+    </div>
+  </section>
+
+  <section>
+    <h2>Worth your attention</h2>
+
+    <div class="callout">
+      <h3>The sprint report flags BK-23 as blocked. Live Jira says otherwise.</h3>
+      <p>
+        BK-23 has been <b>QA Approved</b> since 7 Aug. BK-184 and BK-185 were both closed on 3 Aug, and
+        <code>project = BK AND updated &gt;= -2d</code> returns 34 work items with none of the three among them —
+        so nothing was reopened.
+      </p>
+      <p>
+        Neither BK-184 nor BK-185 appears anywhere in <code>.context/dev-roadmap.md</code>, and BK-23 has no
+        pre-dev blocker row. The only mention is the <b>§4 ES1</b> note — <i>"BK-22/BK-23 dev-merged, awaiting
+        QA"</i> — written before the 7 Aug sign-off and never revised.
+      </p>
+      <p>
+        The roadmap's §7 protocol already names this risk: durable sections survive regeneration, so stale prose
+        persists. The BK-20 row records the same failure — <i>"this row had outlived its own blocker by two
+        days."</i> Updating the ES1 line closes it.
+      </p>
+    </div>
+  </section>
+
+  <section>
+    <h2>Every ticket assigned to me</h2>
+    <p class="standfirst" style="font-size:14px">
+      All 19, in the order they were worked. Nothing omitted — <b>13 closed or approved</b>, <b>6 in Candidate</b>
+      awaiting automation, <b>0</b> waiting on me. States are the live Jira values.
+    </p>
+
+    <div class="scroll">
+      <table>
+        <thead>
+          <tr><th>Ticket</th><th>Type</th><th>Epic</th><th>State</th><th>What I did</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>BK-184</td><td>Defect</td><td>BK-183 QA Defect Mgmt</td><td class="state done">Closed 3 Aug</td><td>Duplicate API field-name mismatch — retested, fix confirmed</td></tr>
+          <tr><td>BK-185</td><td>Defect</td><td>BK-183 QA Defect Mgmt</td><td class="state done">Closed 3 Aug</td><td>Missing UI Duplicate action — retested, fix confirmed</td></tr>
+          <tr><td>BK-181</td><td>Bug</td><td>BK-183 QA Defect Mgmt</td><td class="state done">Closed 3 Aug</td><td>"Request a new code" called signup — retested endpoint + anti-enumeration</td></tr>
+          <tr><td>BK-35</td><td>Story</td><td>BK-30 Manual Execution &amp; Runs</td><td class="state done">QA Approved 3 Aug</td><td>Run execution — 7/7 DoD verified via API across 2 environments</td></tr>
+          <tr><td>BK-177</td><td>Bug</td><td>BK-183 QA Defect Mgmt</td><td class="state dead">Rejected</td><td>Premise refuted — no QA action, left untouched</td></tr>
+          <tr><td>BK-175</td><td>Bug</td><td>BK-183 QA Defect Mgmt</td><td class="state done">Closed 7 Aug</td><td>Magic-link OTP had no code field — reverified 3/3 scenarios</td></tr>
+          <tr><td>BK-23</td><td>Story</td><td>BK-13 ATC Library</td><td class="state done">QA Approved 7 Aug</td><td>ATC Duplicate — 17/17 applicable cases passed</td></tr>
+          <tr><td>BK-45</td><td>Story</td><td>BK-44 Coverage &amp; Traceability</td><td class="state done">QA Approved</td><td>Chain render — incl. DB isolation suite 11/11</td></tr>
+          <tr><td>BK-317</td><td>Defect</td><td>BK-183 QA Defect Mgmt</td><td class="state done">Closed</td><td>Run status pill vocabulary — spec-only fix verified</td></tr>
+          <tr><td>BK-50</td><td>Story</td><td>BK-44 Coverage &amp; Traceability</td><td class="state done">QA Approved</td><td>Export snapshot — exploratory pass produced BK-329, BK-330 and 6 TCs</td></tr>
+          <tr><td>BK-329</td><td>Defect</td><td>BK-183 QA Defect Mgmt</td><td class="state done">Closed 10 Aug</td><td>Filed and retested — 7/7 today</td></tr>
+          <tr><td>BK-330</td><td>Improvement</td><td class="state dead">no parent</td><td class="state done">Closed 10 Aug</td><td>Filed and retested — 8/8 today</td></tr>
+          <tr><td>BK-166</td><td>Story</td><td>BK-1 Tenancy &amp; Identity</td><td class="state done">Ready For Release</td><td>QA Assignee only — owned by Ely, no action from me</td></tr>
+          <tr><td>BK-331</td><td>Test</td><td>BK-70 QA Test Repository</td><td class="state wait">Candidate</td><td>TC01 self-contained export — authored by me, awaiting automation</td></tr>
+          <tr><td>BK-332</td><td>Test</td><td>BK-70 QA Test Repository</td><td class="state wait">Candidate</td><td>TC02 offline render, zero external requests</td></tr>
+          <tr><td>BK-333</td><td>Test</td><td>BK-70 QA Test Repository</td><td class="state wait">Candidate</td><td>TC03 snapshot immutability after live change</td></tr>
+          <tr><td>BK-334</td><td>Test</td><td>BK-70 QA Test Repository</td><td class="state wait">Candidate</td><td>TC04 anonymous redirect to login</td></tr>
+          <tr><td>BK-335</td><td>Test</td><td>BK-70 QA Test Repository</td><td class="state wait">Candidate</td><td>TC05 unauthenticated API rejection</td></tr>
+          <tr><td>BK-336</td><td>Test</td><td>BK-70 QA Test Repository</td><td class="state wait">Candidate</td><td>TC06 no share affordance on the screen</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2>Blocked, and why</h2>
+    <article class="card hold">
+      <div class="card-head">
+        <span class="key">BK-331 → BK-336</span>
+        <span class="pill hold">Needs framework work</span>
+      </div>
+      <p>
+        The six regression tests for BK-50 are planned, reviewed and revalidated — but the test repo was never
+        adapted to Bunkai. Its staging target still points at <code>dojo.upexgalaxy.com</code>, and all four
+        registered components are boilerplate scaffolds carrying <code>PROJ-10x</code> placeholder test IDs.
+      </p>
+      <p>
+        A second, smaller blocker sits underneath: the <code>STAGING_USER_*</code> credentials in <code>.env</code>
+        are rejected with <code>401</code> by <code>/api/v1/auth/signin</code>, so there is no working test user to
+        open a session with. The endpoint itself is fine — password sign-in shipped with BK-166 — the credentials
+        are simply stale.
+      </p>
+      <p>
+        Nothing about the tests themselves is missing. Valid credentials alone would unblock browser-level
+        verification; the framework retarget is what unblocks the suite.
+      </p>
+    </article>
+  </section>
+
+  <section>
+    <h2>The full dojo history</h2>
+    <p class="standfirst" style="font-size:14px">
+      The table above answers <i>what is on my plate today</i>. This section answers <i>what I have tested since
+      day one</i> — a much larger surface, most of it exploratory work whose output was bug reports rather than
+      ticket assignments. Sourced from the <code>.context/PBI/</code> tree in the QA repo.
+    </p>
+
+    <div class="stats">
+      <div class="stat"><span class="n">20</span><span class="l">bug reports authored</span></div>
+      <div class="stat"><span class="n">16</span><span class="l">distinct defects (4 duplicate pairs)</span></div>
+      <div class="stat"><span class="n">11</span><span class="l">epics with local QA context</span></div>
+      <div class="stat"><span class="n">45</span><span class="l">stories synced into the PBI tree</span></div>
+    </div>
+
+    <p class="standfirst" style="font-size:14px">
+      <b>Caveat worth stating plainly:</b> the states below are the ones recorded in each local report at sync
+      time, not values I re-queried against Jira today. Anything marked <span class="state open">Abierta</span>
+      may well have moved since. The two <span class="state done">Closed</span> rows and the BK-96
+      <span class="state wait">Ready For QA</span> row are the exceptions — those I have touched recently.
+    </p>
+
+    <div class="scroll">
+      <table>
+        <thead>
+          <tr><th>Ticket</th><th>Against</th><th>Priority</th><th>State (as recorded)</th><th>Defect</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>BK-51 · BK-54</td><td>BK-8 Project create</td><td>Medium</td><td class="state open">Abierta</td><td>Reserved slugs (<code>api</code>, <code>new</code>, <code>admin</code>…) accepted with <code>201</code> — AC-11 requires rejection. Guard exists on workspaces, not projects.</td></tr>
+          <tr><td>BK-52 · BK-55</td><td>BK-8 Project create</td><td>Medium</td><td class="state open">Abierta</td><td>Project detail route <code>/projects/{slug}</code> is not workspace-scoped — cross-workspace slug collision risk.</td></tr>
+          <tr><td>BK-53 · BK-56</td><td>BK-8 Project create</td><td>Medium</td><td class="state open">Abierta</td><td>Non-Latin names (CJK, Cyrillic) rejected as <code>name_no_alphanumeric</code> — locks out non-Latin teams.</td></tr>
+          <tr><td>BK-57</td><td>Module rename/move</td><td>Medium</td><td class="state open">Abierta</td><td><code>PATCH /modules/{id}</code> combining rename+move is not atomic across the two RPC calls — partial-write window.</td></tr>
+          <tr><td>BK-58</td><td>Infrastructure</td><td>Medium</td><td class="state open">Abierta</td><td>Tech debt — remote Supabase migration ledger for <code>0014</code> needs consolidating.</td></tr>
+          <tr><td>BK-59</td><td>Module lifecycle</td><td>Medium</td><td class="state open">Abierta</td><td>No <code>activity_log</code> audit writes for module rename / move / soft-delete — audit trail has a hole.</td></tr>
+          <tr><td>BK-60</td><td>BK-5 Invite teammate</td><td>Medium</td><td class="state open">Abierta</td><td>CRIT-1 — <code>POST /invites</code> has no email-uniqueness check against active workspace members.</td></tr>
+          <tr><td>BK-61</td><td>BK-5 Invite teammate</td><td>Medium</td><td class="state open">Abierta</td><td>CRIT-2 — no uniqueness check against pending invites; duplicate invites allowed.</td></tr>
+          <tr><td>BK-62</td><td>BK-5 Invite teammate</td><td>Medium</td><td class="state open">Abierta</td><td>CRIT-3 — role overwrite on accept: <code>workspace_members.upsert</code> demotes an existing owner.</td></tr>
+          <tr><td>BK-67</td><td>BK-9 Nested modules</td><td>Medium</td><td class="state open">Abierta</td><td>Module creation at depth ≥5 suppresses the success toast — only the deep-nesting warning shows.</td></tr>
+          <tr><td>BK-68</td><td>BK-9 Nested modules</td><td>Low</td><td class="state open">Abierta</td><td>Create Module form accepts 1-char names — no client-side min-length validation.</td></tr>
+          <tr><td>BK-83</td><td>Workspace switch</td><td>High</td><td class="state open">Abierta</td><td><code>POST /me/active-workspace</code> response omits <code>id</code>, <code>slug</code>, <code>name</code>, <code>role</code>.</td></tr>
+          <tr><td>BK-84</td><td>Staging platform</td><td>Highest</td><td class="state open">Abierta</td><td>PAT bearer auth rejected across Imports, Projects, Modules and Tokens — <code>requireAuth</code> middleware regression.</td></tr>
+          <tr><td>BK-92 · BK-93</td><td>BK-7 Module hierarchy</td><td>Medium</td><td class="state open">Abierta</td><td>PAT bearer token rejected with <code>401</code> on module and workspace resource endpoints.</td></tr>
+          <tr><td>BK-96</td><td>ATC Library</td><td>High</td><td class="state wait">Ready For QA</td><td>Happy-path <code>PATCH /atcs/{id}</code> returns <code>412</code> though the edit commits — retest pending.</td></tr>
+          <tr><td>BK-175</td><td>BK-2 Magic-link auth</td><td>Highest</td><td class="state done">Cerrada</td><td>Magic-link OTP email had no code-entry field on staging — retested 3/3, closed 7 Aug.</td></tr>
+          <tr><td>BK-317</td><td>BK-45 Traceability</td><td>Low</td><td class="state done">Cerrada</td><td>Run status pill read "Aborted" against AC-01's enumerated vocabulary — resolved as a spec fix.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout">
+      <h3>Four of these are duplicate pairs, and that is a finding in itself.</h3>
+      <p>
+        BK-51/BK-54, BK-52/BK-55, BK-53/BK-56 and BK-92/BK-93 are the same defect filed twice each — same title,
+        same body. Nine reports describe six problems.
+      </p>
+      <p>
+        The practical cost is not the clutter: it is that any epic-scoped defect count or heatmap over the
+        Project &amp; Module Hierarchy epic reads roughly 30% high. Worth deciding whether to close the second of
+        each pair as a duplicate, or leave them and annotate the rollup.
+      </p>
+    </div>
+
+    <p class="standfirst" style="font-size:14px">
+      Beyond the bugs, the repo also holds an <b>auth test plan</b> (<code>AUTH-T01</code> user-session
+      validation, with two authored ATCs) and QA context for eleven epics: Tenancy &amp; Identity, Project &amp;
+      Module Hierarchy, User Stories &amp; ACs, ATC Library, Tests as ATC Chains, Manual Execution &amp; Runs,
+      Bugs &amp; Defect Heatmap, Coverage &amp; Traceability, Account Settings, QA Test Repository, and the
+      credentials epic.
+    </p>
+  </section>
+
+  <section>
+    <h2>What I would like your read on</h2>
+    <ul class="asks">
+      <li><b>The ES1 row in <code>dev-roadmap.md</code>.</b> Updating that one line clears the BK-23 false positive. Worth also re-verifying a blocker claim against live Jira before it goes into a report — §6 already has the query recipe for exactly that. Do you own that doc, or should I raise it elsewhere?</li>
+      <li><b>Framework adaptation.</b> Pointing the test repo at Bunkai is the only thing standing between the BK-50 tests and a working regression suite. Worth scheduling now, or does it wait for next sprint?</li>
+      <li><b>A working staging test user.</b> The credentials I have return <code>401</code>. This is the cheapest item on the list and it unblocks UI-level verification immediately — both defects closed today were verified through the API and code, with the browser path left uncovered.</li>
+      <li><b>BK-330 has no parent epic.</b> Every other defect this sprint parents to BK-183 QA Defect Management; this one hangs loose. Small, but it drops out of any epic-scoped rollup. Happy to fix it if that is the right home.</li>
+      <li><b>Staging seeding.</b> The workspace holds a single project, so cross-project isolation cannot be tested end-to-end — it stayed a code-level argument on BK-329. A second seeded project would close that gap for good.</li>
+      <li><b>The fourteen Abierta bugs from the June and July cycles.</b> Several are cheap and high-value — BK-84 (Highest) blocks PAT-based API testing outright, and the three BK-5 invite defects are data-integrity issues. Should I re-verify their live states and propose a triage order, or are they parked deliberately?</li>
+    </ul>
+  </section>
+
+  <footer>
+    Full evidence — request/response logs and the verification harness — is attached to each ticket and stored under the BK-50 evidence folder.
+    Source of record for the history section: <code>.context/PBI/</code> in the QA repo.
+  </footer>
+
+</div>

@@ -3,7 +3,7 @@
 **Jira Key:** [BK-329](https://jira.upexgalaxy.com/browse/BK-329)
 **Related Story:** [BK-50](https://jira.upexgalaxy.com/browse/BK-50) - TMS-Traceability | Export the assembled chain as a read-only snapshot
 **Priority:** Low
-**Status:** Abierta
+**Status:** Cerrada
 **Components:** Coverage & Traceability
 **Severity:** Menor
 **Fix Type:** Bugfix
@@ -86,8 +86,8 @@ Reject the request with the existing uniform `404 not*found` / `"User story not 
 
 ## Metadata
 
-- **Created:** 8/9/2026
-- **Updated:** 8/9/2026
+- **Created:** 9/8/2026
+- **Updated:** 10/8/2026
 - **Reporter:** Benjamin Segovia
 - **Assignee:** Benjamin Segovia
 - **Labels:** api, defect, exploratory-testing, traceability

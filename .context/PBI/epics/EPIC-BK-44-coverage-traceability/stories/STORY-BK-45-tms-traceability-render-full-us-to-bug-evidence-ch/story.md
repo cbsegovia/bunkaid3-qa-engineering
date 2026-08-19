@@ -51,8 +51,8 @@ As a QA Lead, I want to open any user story and see its full evidence chain — 
 
 ## Metadata
 
-- **Created:** 6/1/2026
-- **Updated:** 8/9/2026
+- **Created:** 1/6/2026
+- **Updated:** 9/8/2026
 - **Reporter:** Ely
 - **Assignee:** Benjamin Segovia
 - **Labels:** shift-left-2026-06-11, shift-left-reviewed

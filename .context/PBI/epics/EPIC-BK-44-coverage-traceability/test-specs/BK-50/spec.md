@@ -69,7 +69,7 @@ The traceability screen itself.
 | Member | Kind | Notes |
 |---|---|---|
 | `goto(args: { projectSlug, storyId })` | helper (`@step`) | Navigation only — not an ATC |
-| `exportSnapshot(saveTo: string)` | ATC `@atc('BK-331')` | Clicks Export, awaits the `download` event, saves to `saveTo`, asserts the suggested filename matches `trace-<slug>-YYYYMMDD-HHMM.html`, returns the saved path |
+| `exportSnapshot(saveTo: string)` | ATC `@atc('BK-331')` | Clicks Export, awaits the `download` event, saves to `saveTo`, asserts the suggested filename matches `trace-<slug>-YYYYMMDD-HHMMSS.html`, returns the saved path |
 | `expectAnonymousRedirectToLogin(path: string)` | ATC `@atc('BK-334')` | Opens a **fresh context with no `storageState`**, navigates, asserts the `/login` redirect carries `next=<path>` and that no chain markup was rendered |
 | `expectNoShareAffordance()` | ATC `@atc('BK-336')` | Asserts "Export snapshot" is the only mutating control and that no share / publish / copy-link control exists |
 
@@ -87,7 +87,7 @@ A separate component because its page is the **exported document**, not the app.
 
 | Member | Kind | Notes |
 |---|---|---|
-| `getStoryChain(args: { projectId, storyId })` | helper (`@step`) | Authenticated read; used as a precondition and for chain comparison |
+| `getStoryChain(args: { projectId, storyId })` | helper (`@step`) | Authenticated read; used as a precondition and for chain comparison. **`projectId` must be the story's real owning project** — since BK-329 the route rejects an inconsistent pair with `404 "User story not found."`, so this helper can no longer be called with an arbitrary project UUID |
 | `expectUnauthenticatedRejection(args: { projectId, storyId })` | ATC `@atc('BK-335')` | Issues the call through an **unauthenticated request context**, asserts `401` and error code `unauthorized`, and asserts the body carries no story / criteria / ATC / run / defect keys |
 
 ### `tests/components/api/UserStoriesApi.ts` (L3, API)

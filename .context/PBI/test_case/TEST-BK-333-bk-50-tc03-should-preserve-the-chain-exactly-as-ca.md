@@ -83,8 +83,8 @@ The T0 artifact is byte-stable against the live change. ***The teardown is part 
 
 ## Metadata
 
-- **Created:** 8/9/2026
-- **Updated:** 8/9/2026
+- **Created:** 9/8/2026
+- **Updated:** 9/8/2026
 - **Reporter:** Benjamin Segovia
 - **Assignee:** Benjamin Segovia
 - **Labels:** automation-candidate, critical, e2e, regression, traceability

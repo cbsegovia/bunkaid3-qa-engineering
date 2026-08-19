@@ -87,7 +87,7 @@ Screenshot: `evidence/BK-45-tc01-tc07-full-chain-multidefect.png` — full-chain
 ## Metadata
 
 - **Created:** 8/8/2026
-- **Updated:** 8/9/2026
+- **Updated:** 9/8/2026
 - **Reporter:** Benjamin Segovia
 - **Assignee:** Benjamin Segovia
 - **Labels:** copy-mismatch, defect, exploratory-testing, traceability

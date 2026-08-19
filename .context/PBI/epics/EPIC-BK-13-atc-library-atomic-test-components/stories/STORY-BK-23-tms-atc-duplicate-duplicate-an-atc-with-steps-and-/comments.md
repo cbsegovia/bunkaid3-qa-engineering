@@ -4,7 +4,7 @@
 
 ---
 
-### Ely - 5/19/2026, 9:57:38 PM
+### Ely - 19/5/2026, 21:57:38
 
 1. 🧱 Architect Annotation
 
@@ -44,7 +44,7 @@
 
 ---
 
-### Benjamin Segovia - 6/2/2026, 8:39:37 PM
+### Benjamin Segovia - 2/6/2026, 20:39:37
 
 # ATP DRAFT — [https://jira.upexgalaxy.com/browse/BK-23#icft=BK-23](https://jira.upexgalaxy.com/browse/BK-23#icft=BK-23): TMS-ATC Duplicate
 
@@ -123,7 +123,7 @@ The 4 original ACs cover only the happy path and independence invariant. All err
 
 ---
 
-### Ramiro Majdalani - 6/2/2026, 9:03:39 PM
+### Ramiro Majdalani - 2/6/2026, 21:03:39
 
 Shift-Left QA review for [https://jira.upexgalaxy.com/browse/BK-23#icft=BK-23](https://jira.upexgalaxy.com/browse/BK-23#icft=BK-23) - TMS-ATC Duplicate
 
@@ -229,29 +229,134 @@ Recommendation: keep [https://jira.upexgalaxy.com/browse/BK-23#icft=BK-23](https
 
 ---
 
-### Automation for Jira - 6/20/2026, 12:03:01 PM
+### Automation for Jira - 20/6/2026, 12:03:01
 
 🔎 Pull Request created. Task is pending to ANALYZE and REVIEW by the team. Waiting for PR Approval.
 
 ---
 
-### Automation for Jira - 6/20/2026, 12:03:07 PM
+### Automation for Jira - 20/6/2026, 12:03:07
 
 ✅ Pull Request is successfully MERGED. Task is Done.
 
 ---
 
-### Benjamin Segovia - 6/22/2026, 10:40:01 AM
+### Benjamin Segovia - 22/6/2026, 10:40:01
 
-## QA session paused — blocked by BK-175
+## QA session paused — blocked by [https://jira.upexgalaxy.com/browse/BK-175#icft=BK-175](https://jira.upexgalaxy.com/browse/BK-175#icft=BK-175)
 
 QA started a sprint-testing session on this story today but could not reach the ATC library to verify any of the 4 ACs.
 
-> ***WARNING:**** ****Blocker******:**** the staging login flow (magic-link) is broken — the OTP email has no matching code-entry field on the "Check your inbox" screen. Filed as ****BK-175**** (links as **Blocks* this story). Confirmed by reproducing twice with independent OTP emails; see BK-175 for full repro + evidence.
+> ***WARNING:**** ****Blocker:**** the staging login flow (magic-link) is broken — the OTP email has no matching code-entry field on the "Check your inbox" screen. Filed as ****BK-175**** (links as **Blocks* this story). Confirmed by reproducing twice with independent OTP emails; see [https://jira.upexgalaxy.com/browse/BK-175#icft=BK-175](https://jira.upexgalaxy.com/browse/BK-175#icft=BK-175) for full repro + evidence.
 
-***Separately, worth a check once unblocked******:*** a static review of `upex-bunkai-tms` (git log + branches) found no commits, routes, migrations, or RPC related to duplicating an ATC, despite automated comments on this ticket reporting a PR merged on 2026-06-20. Please confirm the feature is actually deployed to staging before QA resumes — testing against code that isn't there would just waste another pass.
+***Separately, worth a check once unblocked:*** a static review of `upex-bunkai-tms` (git log + branches) found no commits, routes, migrations, or RPC related to duplicating an ATC, despite automated comments on this ticket reporting a PR merged on 2026-06-20. Please confirm the feature is actually deployed to staging before QA resumes — testing against code that isn't there would just waste another pass.
 
-***Status******:**** leaving this ticket at **Ready For QA* — nothing about the duplicate-ATC feature itself has been disproven, we simply couldn't reach it. QA will resume once BK-175 is resolved and the deployment status above is confirmed.
+***Status:**** leaving this ticket at **Ready For QA* — nothing about the duplicate-ATC feature itself has been disproven, we simply couldn't reach it. QA will resume once [https://jira.upexgalaxy.com/browse/BK-175#icft=BK-175](https://jira.upexgalaxy.com/browse/BK-175#icft=BK-175) is resolved and the deployment status above is confirmed.
+
+---
+
+### Ely - 24/6/2026, 15:49:03
+
+Dev clarification: the ATC Duplicate feature IS merged to staging — PR #45, merge commit 5f02be9 (files app/api/v1/atcs/[id]/duplicate, migration 0028, tests). The "PR merged" automation that fired earlier was correct for this ticket. It was also blocked by [https://jira.upexgalaxy.com/browse/BK-175#icft=BK-175](https://jira.upexgalaxy.com/browse/BK-175#icft=BK-175) on the QA side. If staging shows no feature, this is a staging DEPLOYMENT/refresh gap (cf. [https://jira.upexgalaxy.com/browse/BK-142#icft=BK-142](https://jira.upexgalaxy.com/browse/BK-142#icft=BK-142) Vercel staging env), not missing code — please re-verify against the latest staging deploy before sending back to Dev.
+
+---
+
+### Benjamin Segovia - 28/6/2026, 19:32:16
+
+QA Testing Complete - [https://jira.upexgalaxy.com/browse/BK-23#icft=BK-23](https://jira.upexgalaxy.com/browse/BK-23#icft=BK-23)
+
+Environment: Staging ([https://staging-upexbunkai.vercel.app](https://staging-upexbunkai.vercel.app/))
+Result: FAILED (14/18 TCs — 1 FAILED, 2 BLOCKED)
+
+TEST DATA USED:
+
+- ATC: "Login happy path" (created via API during session)
+
+VERIFIED BEHAVIORS:
+
+- AC1: Steps and assertions fully copied to duplicate — VERIFIED (API)
+- AC2: Default title = source + "(copy)" — VERIFIED
+- AC3: Title boundary validation (3–200 chars) — VERIFIED
+- AC4: Copy independence — editing copy does not change original — VERIFIED (API)
+
+FAILED VERIFICATION:
+
+- AC3 (TC11): Custom title via new_title field — FAILED
+
+Expected: {"new_title":"Custom Title"} applies the custom title per FR-014
+
+Actual: new_title silently ignored; default title applied; no error signal
+Impact: API clients following the spec get wrong title with no feedback
+
+DEFECTS:
+
+- [https://jira.upexgalaxy.com/browse/BK-185#icft=BK-185](https://jira.upexgalaxy.com/browse/BK-185#icft=BK-185): ATC Library: Duplicate: No UI Duplicate action (MAJOR — DoD blocker)
+- [https://jira.upexgalaxy.com/browse/BK-184#icft=BK-184](https://jira.upexgalaxy.com/browse/BK-184#icft=BK-184): ATC Library: Duplicate: API field name mismatch new_title vs title (MEDIUM)
+
+OBSERVATIONS:
+
+- DB leg not executed: staging-dhhub MCP not configured (DBHUB_* empty in .env)
+- TC02/TC03 BLOCKED: 0-step ATC test data cannot be created via UI
+
+Artifacts: ATP (customfield*10067), ATR (customfield*10147)
+
+Next: Fix [https://jira.upexgalaxy.com/browse/BK-185#icft=BK-185](https://jira.upexgalaxy.com/browse/BK-185#icft=BK-185) (UI action) + [https://jira.upexgalaxy.com/browse/BK-184#icft=BK-184](https://jira.upexgalaxy.com/browse/BK-184#icft=BK-184) (field name) → re-test Stage 2 on failed TCs
+
+---
+
+### Benjamin Segovia - 7/8/2026, 11:58:32
+
+## Retest complete — corrected verdict: PASSED (blocked only by a Jira permission gap, not by app behavior)
+
+Retested against staging (`https://staging-upexbunkai.vercel.app`) now that BK-184 and BK-185 are both Cerrada.
+
+An earlier same-day pass mis-read TC11/TC10 as a regression (tested the `title` field). That was a mistake in how the retest was briefed, not a real finding: BK-184's shipped fix (PR #107, commit `c74f36c`) renamed the request field from `title` to `new*title` to match the SRS spec — `new*title` applying and `title` being silently ignored is the correct, documented post-fix behavior. A combined-body probe (`{"title":"AAAA","new_title":"BBBB"}` → applied `"BBBB"`) confirms this directly.
+
+***Corrected results — 17/17 applicable TCs PASSED******:***
+
+- TC11 / TC10 (custom title via `new_title`) — PASSED
+- UI Duplicate action, both entry points (BK-185 fix) — PASSED
+- TC02 (0-step ATC duplicate) — DESCOPED: a 0-step ATC cannot exist anywhere in the system (`POST /atcs` with `steps:[]` → `422 validation_failed`, API-level `min(1)`). Structural, not a gap.
+- TC03 (0-assertion ATC duplicate) — PASSED (previously BLOCKED on missing test data, now seeded and verified)
+- AC1 / AC4 / TC17 regression sanity — PASSED, no collateral damage from either fix
+
+***Known gap (non-blocking)******:**** the DB leg (row-level isolation check for AC4) could not be run — `DBHUB_**` is unset in `.env` for the staging DB MCP, same gap hit during today's BK-175 retest. UI-level evidence for AC4 stands in as the available signal; a DB spot-check is recommended once DBHub access is configured.
+
+***Why this ticket isn't transitioned yet******:*** the authenticated QA account currently lacks `EDIT*ISSUES` / `TRANSITION*ISSUES` on this specific issue type (Historia/Story) in project BK — confirmed via `mypermissions`, and reproducible on both the ATR custom-field write and the status transition. The same account has full edit/transition rights on Bug-type BK issues (used earlier today on BK-175). This reads as an issue-type-scoped permission-scheme gap, likely a leftover from the upexgalaxy71 site migration. Flagging for whoever has permission-scheme access on project BK — once granted, this ticket moves straight to QA Approved with no re-testing needed.
+
+---
+
+### Benjamin Segovia - 10/8/2026, 08:53:46
+
+## QA note — the "blocked" signal on this story is stale link data, not an active blocker
+
+> ***INFO:*** Posting this so the analysis does not have to be redone the next time an automated sprint report flags BK-23 as blocked. Verified live on 2026-08-10 against `upexgalaxy71`.
+
+### Current state
+
+BK-23 is ***QA Approved*** (resolved 2026-08-07). Retest covered 17/17 applicable TCs, all PASS. Nothing on this story is waiting on QA.
+
+### Why reports still call it blocked
+
+Closing a defect does not remove its issue link — it only changes the status on the other end. BK-23 therefore still carries link records whose counterparts are all closed:
+
+| Link type | Counterpart | Counterpart status | Closed on |
+| --- | --- | --- | --- |
+| Blocks (outward) | BK-185 | Cerrada | 2026-08-03 |
+| Blocks (inward) | BK-175 | Cerrada | 2026-08-07 |
+| Problem/Incident (inward) | BK-184 | Cerrada | 2026-08-03 |
+| Problem/Incident (inward) | BK-185 | Cerrada | 2026-08-03 |
+| Dependencies (outward) | BK-18 | Ready For Release | — |
+
+Any check that walks `issuelinks` and counts blockers ***without*** filtering on `statusCategory != done` will read those records as active blockers. That is the false positive: it confirms the link exists, not that the blocker is open.
+
+### Evidence that nothing was reopened
+
+JQL `project = BK AND updated >= -2d` returns 34 work items. BK-23, BK-184 and BK-185 are ***absent*** from that result — their last modification remains 3 and 7 August respectively. There has been no reopen and no regression.
+
+### Recommendation
+
+Fix the reporting filter rather than the data. Adding `statusCategory != done` to the blocker walk resolves this permanently and keeps the `Problem/Incident` links intact, which are the only record tying defects BK-184 and BK-185 back to this story. The stale links are being left in place deliberately.
 
 ---
 

@@ -85,8 +85,8 @@ A file is delivered, its name follows the ratified D26 pattern, and its contents
 
 ## Metadata
 
-- **Created:** 8/9/2026
-- **Updated:** 8/9/2026
+- **Created:** 9/8/2026
+- **Updated:** 9/8/2026
 - **Reporter:** Benjamin Segovia
 - **Assignee:** Benjamin Segovia
 - **Labels:** automation-candidate, e2e, high, regression, traceability
