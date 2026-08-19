@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "generatedAt": "2026-08-19T01:15:41.095Z",
+  "generatedAt": "2026-08-19T01:17:39.710Z",
   "components": {
     "api": [
       {
@@ -28,17 +28,17 @@
           {
             "id": "BK-107",
             "method": "getStoryChainSuccessfully",
-            "line": 56
-          },
-          {
-            "id": "BK-108",
-            "method": "expectUnauthenticatedRejection",
-            "line": 77
+            "line": 61
           },
           {
             "id": "BK-109",
             "method": "expectMismatchedPairNotFound",
-            "line": 108
+            "line": 118
+          },
+          {
+            "id": "BK-335",
+            "method": "expectUnauthenticatedRejection",
+            "line": 84
           }
         ]
       },
@@ -50,12 +50,12 @@
           {
             "id": "BK-105",
             "method": "getUserStorySuccessfully",
-            "line": 64
+            "line": 130
           },
           {
             "id": "BK-106",
             "method": "getUserStoryNotFound",
-            "line": 81
+            "line": 147
           }
         ]
       }
@@ -79,6 +79,23 @@
         ]
       },
       {
+        "name": "SnapshotDocumentPage",
+        "file": "SnapshotDocumentPage.ts",
+        "relativePath": "tests\\components\\ui\\SnapshotDocumentPage.ts",
+        "atcs": [
+          {
+            "id": "BK-332",
+            "method": "openOffline",
+            "line": 70
+          },
+          {
+            "id": "BK-333",
+            "method": "expectSnapshotUnchangedAfterMutation",
+            "line": 109
+          }
+        ]
+      },
+      {
         "name": "TraceabilityPage",
         "file": "TraceabilityPage.ts",
         "relativePath": "tests\\components\\ui\\TraceabilityPage.ts",
@@ -86,12 +103,27 @@
           {
             "id": "BK-110",
             "method": "expectChainRenders",
-            "line": 62
+            "line": 67
           },
           {
             "id": "BK-111",
             "method": "expectNoStorySelectedPrompt",
-            "line": 75
+            "line": 80
+          },
+          {
+            "id": "BK-331",
+            "method": "exportSnapshot",
+            "line": 100
+          },
+          {
+            "id": "BK-334",
+            "method": "expectAnonymousRedirectToLogin",
+            "line": 125
+          },
+          {
+            "id": "BK-336",
+            "method": "expectNoShareAffordance",
+            "line": 156
           }
         ]
       }
@@ -99,10 +131,10 @@
   },
   "preconditions": [],
   "summary": {
-    "totalComponents": 5,
-    "totalATCs": 11,
+    "totalComponents": 6,
+    "totalATCs": 16,
     "apiComponents": 3,
-    "uiComponents": 2,
+    "uiComponents": 3,
     "preconditionModules": 0
   }
 }
