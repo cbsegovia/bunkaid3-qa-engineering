@@ -307,6 +307,54 @@ Project values live in **`.agents/project.yaml`** — load once per session, cac
 
 > **`.context/PBI/` layout is OWNED by `scripts/sync-jira-issues.ts`.** Module = Epic (1:1). Jira is the source of truth; local `.md` files are a **read-only cache**. NEVER hand-write a Jira-mirrored file — generate content, push it to the Jira field (or fallback), then run the sync. Skill-authored NON-Jira files live INSIDE the same folders.
 
+### 9.0 Cache tiers — `[SYNC]` / `[COMMIT]` / `[LOCAL]` (ADR-0001)
+
+Every file under `.context/PBI/` (and, by the same vocabulary, elsewhere in `.context/`) belongs to exactly one tier:
+
+| Tier | Meaning | Git status | Recovery |
+|---|---|---|---|
+| `[SYNC]` | Generated from Jira by `scripts/sync-jira-issues.ts`. Mirrors a live field/comment. | **Target state: gitignored** (`.gitignore` → `.context/PBI/`, added under ADR-0001). | `bun run jira:sync-issues pull` today. `bun run context:hydrate` — **named future entry point, NOT YET IMPLEMENTED** — do not assume it exists. |
+| `[COMMIT]` | Skill-authored, non-Jira, meant to be shared/reviewed (README, templates, roadmaps, specs). | Committed as usual. | Normal git history. |
+| `[LOCAL]` | Session-scoped working notes (session memory, evidence not otherwise archived). | Not committed, not Jira-recoverable — ephemeral by design. | None — regenerate by re-running the session. |
+
+**Current repo state vs. target state**: `.context/PBI/` is, as of this writing, **legacy — still fully git-tracked (630 files), pending untrack**. The `.gitignore` rule for `.context/PBI/` is already in place; the matching `git rm -r --cached .context/PBI/` has **not** been executed and requires its own explicit, separately-confirmed commit (see ADR-0001 Consequences). Do not assume the untrack has happened — check `git ls-files .context/PBI | wc -l` if it matters to your task.
+
+### 9.1 Artifact ladder
+
+One line each, ascending scope. **ATS is mandatory from Stage 1** (per ADR-0001) — earlier doctrine omitted it.
+
+| Artifact | Scope | One-line role |
+|---|---|---|
+| MTP | Project | Master Test Plan — what to test and why, project-wide. |
+| FTP | Feature/Epic | Feature Test Plan — scope for one Epic. |
+| STP / STR | Story | Story Test Plan / Story Test Results — planning + outcome at Story grain. |
+| ATP / ATS / ATR | Story | Acceptance Test Plan (manual case list) / **Acceptance Test Set — groups ALL Test Cases for the Story, mandatory from Stage 1** / Acceptance Test Results (executed outcome). |
+| TS | Test Case | Individual Test Case (Xray `Test` issue). |
+
+### 9.2 Traceability cascade (corrected — ADR-0001)
+
+Prior doctrine treated ATP/ATR links as if they carried Xray coverage weight. **Per upstream finding against live Xray instances** (not yet independently re-verified against this repo's own instance — blocked on missing Xray credentials), that assumption was wrong. Corrected cascade, in priority order:
+
+1. **TC → ATS → Story** (membership in the Story's ATS + link) — **primary. Counts toward Xray's coverage panel.**
+2. **TC → Story direct** (no ATS) — **last resort. Also counts toward coverage.**
+3. **TC → ATP → Story** — **administrative traceability only. Does NOT count toward Xray coverage.**
+
+Practical effect: a Story can show "fully covered" in every ATP/ATR field this repo already documents and still show **zero** coverage in Xray's own panel, if no TC is in an ATS or directly linked. Sync still emits end-of-run **traceability WARNINGS** for ATP/ATR linked via the wrong link type, atypical Defect links, and orphan Defects with no coverable parent — those warnings are unaffected by this correction, but do not read them as a coverage proxy.
+
+> Propagating "ATS mandatory" into `/sprint-testing` and `/test-documentation` Stage 1 planning is a **follow-up**, not done by this doctrine change alone.
+
+### 9.3 Deferred to a follow-up framework-development session
+
+Blocked on missing Xray credentials (`staging-qa3` — the account `.env`/automation uses — has no workspace access, per prior session finding). Named here so the doctrine is honest about the gap rather than silent about it:
+
+- `bun run context:hydrate` — implementation (currently undocumented-as-working; see §9.0).
+- ATS-aware rewrite of `scripts/sync-jira-issues.ts` (tier-aware target directories, ATS field/link handling).
+- 11 new Xray CLI commands (`link create`, `plan add-set` / `exec add-set`, `set sync`, `plan get`, `test update-step`, `exec create --environment` alerting, `bun xray test enrich`, and related surface named in ADR-0001).
+- `bun run tests:map`.
+- `/jira-components`.
+
+Binding decision record: `.context/ADR/ADR-0001-adopt-pbi-cache-and-ats-doctrine.md`.
+
 > **QA-process parenting (3-axis model).** In Jira, every `bug` / `defect` / `improvement` parents to the QA process epic **"QA Defect Management"** (every `Test` issue to **"QA Test Repository"**, every **Test Plan** FTP/STP/ATP to **"QA Master Test Plan"** — itself an Epic, not a Test Plan work type — and every **Test Execution** FTR/STR/ATR + Precondition + Test Set to **"QA Test Artifacts"**) — NEVER a product/dev epic. Traceability to the source Story is carried by an **issue-link**, and the affected product area by **components** — three separate axes (parent = QA bucket · link = source Story · components = product module). Canon: `agentic-qa-core/references/defect-management-doctrine.md`.
 
 **Canonical tree** (Epic-centric; `<KEY>` = Jira key, `<slug>` from summary):
@@ -341,6 +389,8 @@ Project values live in **`.agents/project.yaml`** — load once per session, cac
   test-plans/ test-executions/ test-sets/ preconditions/   [SYNC — Xray container issues (jira-xray); description holds the ATP/ATR body]
 ```
 
+> Note: every path in this tree is currently `[SYNC]`-tier per §9.0 (no `[COMMIT]`-tier file has been identified inside `.context/PBI/` yet). The tree itself is **not** rewritten this pass — its accuracy depends on the deferred `scripts/sync-jira-issues.ts` rewrite (§9.3). Rewriting it now would describe target-directory behavior that doesn't exist in code yet.
+
 **Default `pull` scope = Epics + Stories + Bugs** (+ optional `--types` / `JIRA_SYNC_TYPES`). **Coverable** types (Story, Bug, Defect, Improvement, Tech Story, Tech Debt) each get their OWN folder: body md + `acceptance-test-plan.md` + `acceptance-test-results.md` + `test-executions/` (only when >1 Execution linked) + nested `defects/`. **ATP/ATR precedence** (items-first — a **Test Plan** item for ATP / **Test Execution** item for ATR by excellence; the Story custom field is fallback only): linked Xray Test Plan desc (ATP) / Test Execution / Re-Test Execution desc (ATR, newest wins) OVERRIDE the Story custom-field copy → else issue field → else Jira comment (only `--include-comments`) → else silent. Sync emits end-of-run **traceability WARNINGS** for ATP/ATR linked via the wrong link type, atypical Defect links, and orphan Defects with no coverable parent.
 
 **`[SYNC]` files = forbidden to hand-write** (overwritten on every sync — NO file is hard-protected; Jira is the source of truth). **Rule of thumb**: file mirrors a Jira/Xray field → read the synced copy, never author it locally. File holds info NOT in Jira (session notes, specs, ATC, roadmaps, evidence) → author it locally as usual.
@@ -348,7 +398,7 @@ Project values live in **`.agents/project.yaml`** — load once per session, cac
 **DETAILED READS via the script** (replaces `acli view` for custom fields):
 - `bun run jira:sync-issues get <KEY> --include-comments` → one issue, ALL custom fields + comments → read the generated `.md`.
 - `bun run jira:sync-issues jql "<query>"` → batch. `pull --epic <KEY>` / `--story <KEY>` → scoped. New flags: `--sprint <active|current|closed|>=N|7,8,10>` (sprint filter), `--types <csv>` (extra coverable types), `--no-defects` (skip defect discovery), `--project <KEY>` (override key). Env defaults: `JIRA_SYNC_SPRINTS`, `JIRA_SYNC_TYPES` (flag > env > default).
-- Traceability (link graph Story↔ATP↔ATR↔TC) + Xray run status STAY on `acli`/`xray-cli` — the script only mirrors field content.
+- Traceability (link graph Story↔ATP↔ATR↔TC — see §9.2 for what actually counts toward Xray coverage) + Xray run status STAY on `acli`/`xray-cli` — the script only mirrors field content.
 
 **FALLBACK**: if a custom field a skill must fill is absent from the instance, the skill writes the content as a structured Jira comment (`## <label>`) per `.agents/jira-required.yaml` → `fallback:`. The sync then emits a pointer stub for that field's `.md`. Never block on a missing field.
 

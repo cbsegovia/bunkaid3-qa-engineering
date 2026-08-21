@@ -148,3 +148,10 @@ dbhub.local.toml
 
 # ----- 2026-08-03 (sync) -----
 .template/upstream-sha/
+
+# ===== PBI cache tier (ADR-0001) =====
+# .context/PBI/ is a regenerated Jira cache (see CLAUDE.md §9) — not committed
+# as of 2026-08-21; existing tracked copy remains until a separate confirmed
+# untrack commit. Recovery: bun run jira:sync-issues pull (context:hydrate not
+# yet implemented — see .context/ADR/ADR-0001-adopt-pbi-cache-and-ats-doctrine.md).
+.context/PBI/
