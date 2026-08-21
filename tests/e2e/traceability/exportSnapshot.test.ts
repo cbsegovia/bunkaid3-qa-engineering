@@ -13,18 +13,25 @@
  * .context/reports/adapt-framework-plan.md "Known gaps" #1. Written and
  * type/lint-clean; run once the QA account has an invite.
  *
+ * The fixture constants below WERE also wrong (a module name used as a
+ * project slug, and a title slug used as a story id) — fixed 2026-08-19,
+ * verified live against a different account with real workspace access.
+ * That fix alone does not unblock this file; the workspace-membership gap
+ * above is the remaining blocker for `qa3`.
+ *
  * Project: e2e (depends on ui-setup)
  */
 
 import { join } from 'node:path';
 import { expect, test } from '@TestFixture';
 
-// TODO(BK-50): once the QA account is invited to a workspace, resolve
-// these from the BK-45 fixture set on staging ("bk-45-fixtures" module,
-// "full 5-layer evidence chain" story) instead of a placeholder — see
-// BK-50 spec.md §6 (Discover strategy: never hardcode the UUID).
-const FIXTURE_PROJECT_SLUG = 'bk-45-fixtures';
-const FIXTURE_STORY_ID = 'full-5-layer-evidence-chain';
+// BK-50: resolved to the real BK-45 fixture on staging — "bk-45-fixtures"
+// is a MODULE inside the "bk-23-test-project" project, not a project slug
+// of its own, and the story is addressed by UUID, not by its title slug.
+// Verified live 2026-08-19: /projects/bk-23-test-project/traceability?story=<uuid>
+// renders the chain with the "Export snapshot" control present.
+const FIXTURE_PROJECT_SLUG = 'bk-23-test-project';
+const FIXTURE_STORY_ID = 'd57804e8-d614-445e-b707-8c25d9ca5dac';
 
 test.describe('BK-50: Traceability export snapshot', { tag: ['@critical'] }, () => {
   test('BK-50: should download a self-contained document carrying the full chain, its identity and the export timestamp', async ({ ui }) => {
