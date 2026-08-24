@@ -81,6 +81,24 @@ export function errorMessage(err: unknown): string {
 /**
  * Recursive count of plain files under a directory. Returns 0 when the dir is missing.
  */
+/**
+ * True when a repo-relative path falls under one of the `repoOnlyPaths` prefixes
+ * — the boilerplate's own material, which never travels to a consumer project.
+ *
+ * A prefix matches the path itself or anything beneath it, and only at a segment
+ * boundary: `docs/qa-standard` must not swallow a sibling called
+ * `docs/qa-standards` or `docs/qa-standard-archive`. Backslashes are normalized
+ * so a Windows-shaped entry path compares equal to a POSIX-shaped prefix.
+ */
+export function isRepoOnlyPath(filePath: string, prefixes: string[]): boolean {
+  const p = filePath.replace(/\\/g, '/');
+  return prefixes.some((raw) => {
+    const prefix = raw.replace(/\\/g, '/').replace(/\/+$/, '');
+    if (prefix === '') { return false; }
+    return p === prefix || p.startsWith(`${prefix}/`);
+  });
+}
+
 export function countFilesInDir(dir: string): number {
   if (!fs.existsSync(dir)) { return 0; }
   let count = 0;
@@ -902,7 +920,7 @@ function dedupeDeltaByPath(
  *
  *   - `paths: ['.']` matches any path; specificity 0.
  *   - `paths: ['.claude']` matches `.claude/foo`; specificity 7.
- *   - `paths: ['.claude/skills']` matches `.claude/skills/foo`; specificity 14.
+ *   - `paths: ['.agents/skills']` matches `.agents/skills/foo`; specificity 14.
  *
  * Used by `dedupeDeltaByPath` to pick the most-specific owner when two
  * components both match a file.
@@ -2163,12 +2181,19 @@ export async function runUpdate(
   }
 
   // Drop generated, per-repo files that must never be synced (e.g.
-  // .claude/skills/REGISTRY.md). One filter point covers all three detection
+  // .agents/skills/REGISTRY.md). One filter point covers all three detection
   // paths — bootstrap, content reconcile, and git-log delta — since they all
   // feed into `entries`. Each repo regenerates these from its own state.
   if (cfg.excludePaths && cfg.excludePaths.length > 0) {
     const excluded = new Set(cfg.excludePaths.map(p => p.replace(/\\/g, '/')));
     entries = entries.filter(e => !excluded.has(e.path.replace(/\\/g, '/')));
+  }
+
+  // Drop the boilerplate's own working material, which no consumer inherits
+  // (e.g. `docs/qa-standard/`). Same filter point as excludePaths for the same
+  // reason: all three detection paths converge on `entries`.
+  if (cfg.repoOnlyPaths && cfg.repoOnlyPaths.length > 0) {
+    entries = entries.filter(e => !isRepoOnlyPath(e.path, cfg.repoOnlyPaths ?? []));
   }
 
   // Filter out unchanged / binary-skip from the user-facing pool

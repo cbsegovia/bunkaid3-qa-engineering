@@ -30,7 +30,8 @@ export async function login(flags: Flags): Promise<void> {
   //
   // The HOST is the one value that does not follow the flag-then-env rule above:
   // it resolves from `.agents/project.yaml` -> issue_tracker.atlassian_url before
-  // falling back to `ATLASSIAN_URL`. `login` PERSISTS whatever it picks into the
+  // falling back to `ATLASSIAN_URL` (no longer a .env variable — last resort
+  // only). `login` PERSISTS whatever it picks into the
   // machine-global `~/.xray-cli/config.json`, which then outlives the repo and is
   // never revisited — seeding it from a stale env value bakes the wrong site into
   // a cache no diff will ever show. An explicit `--jira-url` still wins, since
@@ -70,6 +71,18 @@ export async function login(flags: Flags): Promise<void> {
     xray auth login
 
   Get your API keys from: Jira → Apps → Xray → Settings → API Keys
+
+  Don't see that screen? Then you do not administer Xray on this instance, and
+  retrying will not produce a key. Ask whoever owns the Xray app for a
+  client-id / client-secret pair and put them in .env as XRAY_CLIENT_ID /
+  XRAY_CLIENT_SECRET — that is where every script here reads them from.
+
+  While you wait, everything that does NOT touch Xray still works:
+    bun run jira:sync-issues get <KEY>   read tickets, ACs, comments
+    bun run test                         run the suite
+    bun run tests:map                    coverage map from the local cache
+  Test cases can also live as Jira Test issues (Modality jira-native) and be
+  imported into Xray later. This credential blocks the Xray write-path, not QA.
 
   Optional Jira credentials (for backup restore --sync):
     --jira-url <url>       Jira base URL (e.g., https://company.atlassian.net)

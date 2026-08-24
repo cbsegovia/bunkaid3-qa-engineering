@@ -455,10 +455,27 @@ export interface UpdaterConfig {
    * be synced (each repo regenerates its own). Matched by exact repo-relative
    * path. Excluded from every detection path — bootstrap, content reconcile, and
    * git-log delta — so they are never copied, overwritten, or deleted.
-   * Example: `.claude/skills/REGISTRY.md` (built by `bun run skills:registry`
+   * Example: `.agents/skills/REGISTRY.md` (built by `bun run skills:registry`
    * from the repo's own installed skill set, including local community skills).
    */
   excludePaths?: string[]
+  /**
+   * Paths that live in the template repo but must never reach a consumer project
+   * — the boilerplate's OWN working material rather than framework the consumer
+   * inherits. Matched as a repo-relative path or as a directory prefix, so
+   * `docs/qa-standard` covers everything under it.
+   *
+   * Distinct from the two neighbours above, which both describe a file the
+   * consumer DOES have:
+   *   - `bootstrapOnlyPaths` ships once at scaffold, then the consumer owns it.
+   *   - `excludePaths` exists in both repos; the sync just never overwrites it.
+   *   - `repoOnlyPaths` never travels at all.
+   *
+   * The scaffold side is enforced separately by `TEMPLATE_EXCLUDES` in
+   * `packages/create-agentic-qa/src/prepare.ts`; an entry usually belongs in
+   * both, or `bun run up` re-delivers what the scaffold pruned.
+   */
+  repoOnlyPaths?: string[]
   /**
    * Extra repo-relative paths added to the sparse-checkout of the template
    * clone. Not synced — they exist so afterApply hooks can READ the upstream
