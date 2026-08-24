@@ -92,3 +92,7 @@ packages/decks/
 scripts/contribution-audit/out/
 scripts/contribution-audit/roster.local.json
 scripts/contribution-audit/report_template.html
+
+# ----- 2026-08-24 (sync) -----
+.scratch/
+.session/

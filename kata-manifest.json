@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "generatedAt": "2026-08-19T01:17:39.710Z",
+  "generatedAt": "2026-08-24T15:34:01.354Z",
   "components": {
     "api": [
       {
@@ -129,12 +129,12 @@
       }
     ]
   },
-  "preconditions": [],
+  "steps": [],
   "summary": {
     "totalComponents": 6,
     "totalATCs": 16,
     "apiComponents": 3,
     "uiComponents": 3,
-    "preconditionModules": 0
+    "stepsModules": 0
   }
 }

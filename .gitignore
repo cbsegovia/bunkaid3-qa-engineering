@@ -155,3 +155,26 @@ dbhub.local.toml
 # untrack commit. Recovery: bun run jira:sync-issues pull (context:hydrate not
 # yet implemented — see .context/ADR/ADR-0001-adopt-pbi-cache-and-ats-doctrine.md).
 .context/PBI/
+
+# ----- 2026-08-24 (sync) -----
+.context/reports/*
+!.context/reports/README.md
+.env*
+!.env.example
+.claude/skills
+.claude/worktrees/
+.template/pre-agents-migration/
+.context/PBI/*
+!.context/PBI/README.md
+!.context/PBI/templates/
+!.context/PBI/epics/
+.context/PBI/epics/*
+!.context/PBI/epics/*/
+.context/PBI/epics/*/*
+!.context/PBI/epics/*/test-specs/
+.agents/skills/*-workspace/
+.agents/skills/playwright-cli/
+.agents/skills/playwright-best-practices/
+.agents/skills/resend-cli/
+!skills-lock.json
+!**/skills-lock.json

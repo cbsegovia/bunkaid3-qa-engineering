@@ -12,7 +12,7 @@ This reference defines the delta only. Anything not overridden here behaves exac
 
 ```
 Source of truth (cited, not duplicated):
-  .claude/skills/sprint-testing/references/acceptance-test-planning.md
+  .agents/skills/sprint-testing/references/acceptance-test-planning.md
 
 Phases run by the Refinement subagent:
   Phase 1  Critical Analysis        -> run as-is, light code reads only
@@ -46,7 +46,7 @@ The Refinement subagent's job is to produce a high-signal artifact for PO + Dev 
 | Module context (if it exists) | `.context/PBI/epics/EPIC-<EPIC_KEY>-<slug>/module-context.md` (module = Epic, 1:1) |
 | Code (light read) | `{{BACKEND_REPO}}/{{BACKEND_ENTRY}}` + `{{FRONTEND_REPO}}/{{FRONTEND_ENTRY}}` — read enough to confirm feasibility, NOT to reproduce |
 | Common gap catalog | `refinement-questions.md` (this skill) |
-| ATP draft skeleton | `atp-draft-template.md` (this skill) |
+| ATP outline skeleton | `atp-outline-template.md` (this skill) |
 
 ---
 
@@ -58,7 +58,7 @@ The Refinement subagent's job is to produce a high-signal artifact for PO + Dev 
   shift-left-refinement.md     # NON-Jira working file — this subagent's deliverable
 ```
 
-`shift-left-refinement.md` follows the skeleton in `atp-draft-template.md`. Both files are NON-Jira working artifacts authored locally. Jira-mirrored files (story.md, acceptance-criteria.md, etc.) are produced ONLY by the sync — NEVER hand-write them.
+`shift-left-refinement.md` follows the skeleton in `atp-outline-template.md`. Both files are NON-Jira working artifacts authored locally. Jira-mirrored files (story.md, acceptance-criteria.md, etc.) are produced ONLY by the sync — NEVER hand-write them.
 
 The subagent must NOT touch Jira. Phase 3 of the orchestrator skill owns all Jira mutations.
 
@@ -170,7 +170,7 @@ Format: `Should <BEHAVIOR> <CONDITION>`. Same as `acceptance-test-planning.md` �
 - `Should display "Code expired" error after OTP entry with code older than 5 minutes`
 - `Should reject negative refund amount on POST /refunds`
 
-Capture in `## Phase 4 — Test Outlines (DRAFT)` section of `shift-left-refinement.md`. Include the coverage estimate table at the top, then the outline list grouped by Type (Positive / Negative / Boundary / Integration).
+Capture in `## Phase 4 — Test Outlines (outline names only)` section of `shift-left-refinement.md`. Include the coverage estimate table at the top, then the outline list grouped by Type (Positive / Negative / Boundary / Integration).
 
 ---
 
@@ -184,7 +184,7 @@ Read sprint-testing/references/acceptance-test-planning.md §"Phase 5 — Edge c
 | Test-data categories table | **EXCLUDE**. Deferred to in-sprint. |
 | Data generation strategy (Static / Faker / Cleanup) | **EXCLUDE**. Deferred to in-sprint. |
 
-Capture in `## Phase 5 — Edge Cases (DRAFT)` section of `shift-left-refinement.md`.
+Capture in `## Phase 5 — Edge Cases (outline)` section of `shift-left-refinement.md`.
 
 ---
 
@@ -228,7 +228,8 @@ The orchestrator presents the per-Story summary to the user, waits for OK, then 
 - **No parametrization tables, no test-data JSON, no Faker recipes.** Deferred to in-sprint planning.
 - **No TC creation.** TCs are formalized in Stage 4 (`/test-documentation`).
 - **No git operations.** No branch, no commit.
-- **No new ATP / ATR Jira issues.** Phase 3 may create a Test Plan in Modality jira-xray IF the user opted in — the Refinement subagent never does.
+- **No new ATP / ATR Jira issues.** Phase 3 publishes the ATP to the `{{jira.acceptance_test_plan}}` field only — nobody in this skill creates TMS items. The Test Plan issue is created later by `/sprint-testing` Stage 1 from the field content.
+- **No subtask mutations.** The `[QA] Shift-Left Review` tracking subtask is owned by the orchestrator (Phase 1: find-or-create → In Progress; Phase 3: annotations + Done) — the Refinement subagent never touches it.
 - **No `evidence/` folder.** Feature does not exist yet.
 - **No "approval from user" mid-refinement.** Subagents do not prompt the user — they finish and return. The orchestrator presents and waits.
 
@@ -242,14 +243,14 @@ The orchestrator presents the per-Story summary to the user, waits for OK, then 
 4. **Cite, do not duplicate.** `acceptance-test-planning.md` is the source of truth for Phases 1-5 mechanics. If a future change to that file affects shift-left, the change propagates automatically.
 5. **Coverage estimate matters.** PO uses the per-Type counts to estimate Story points. Always include the table even if some Types are 0.
 6. **Module-context reuse.** If `.context/PBI/epics/EPIC-<EPIC_KEY>-<slug>/module-context.md` exists (module = Epic, 1:1), read it and skip module-level code exploration. Story-level reads only.
-7. **Output language**: artifact + Jira-bound content in English. Mirror user's language only in conversation. CLAUDE.md §1 Rule #14.
+7. **Output language**: artifact + Jira-bound content in English. Mirror user's language only in conversation. AGENTS.md §1 Rule #14.
 
 ---
 
 ## Checklist before returning to the orchestrator
 
 - [ ] PBI folder bootstrapped (created or detected); minimal `context.md` written if missing
-- [ ] `shift-left-refinement.md` written with sections Phase 1 / Phase 2 / Phase 3 / Phase 4 (DRAFT) / Phase 5 (DRAFT) / Story Quality Assessment / Critical Questions / Tech Questions / Suggested Story Improvements / Data feasibility flags / Recommended testing strategy
+- [ ] `shift-left-refinement.md` written with sections Phase 1 / Phase 2 / Phase 3 / Phase 4 (outline names only) / Phase 5 (outline) / Story Quality Assessment / Critical Questions / Tech Questions / Suggested Story Improvements / Data feasibility flags / Recommended testing strategy
 - [ ] All inferred scenarios + edge cases carry `NEEDS PO/DEV CONFIRMATION`
 - [ ] Phase 4 coverage estimate table included; per-outline test-data JSON NOT included
 - [ ] Phase 5 edge-case names included; test-data generation strategy NOT included

@@ -1,6 +1,6 @@
 # `acli` repo integration — agentic-qa-boilerplate
 
-> **Purpose**: Plug the tool-agnostic `acli` skill (`.claude/skills/acli/SKILL.md`) into the QA boilerplate's workflow doctrine, TMS modality model, slug catalog, and anti-patterns. The `acli/SKILL.md` itself is byte-identical between the QA and DEV boilerplates; everything QA-specific lives here so the tool surface stays single-source-of-truth.
+> **Purpose**: Plug the tool-agnostic `acli` skill (`.agents/skills/acli/SKILL.md`) into the QA boilerplate's workflow doctrine, TMS modality model, slug catalog, and anti-patterns. The `acli/SKILL.md` itself is byte-identical between the QA and DEV boilerplates; everything QA-specific lives here so the tool surface stays single-source-of-truth.
 > **Use when**: Any QA workflow skill (`shift-left-testing`, `sprint-testing`, `test-documentation`, `test-automation`, `regression-testing`, `project-discovery`, `framework-development`) calls `[ISSUE_TRACKER_TOOL]` or `[TMS_TOOL]` and resolves it to `/acli`. Load this BEFORE invoking the tool — it answers *which slug, which status, which custom field, which modality* before `acli/SKILL.md` answers *how the binary works*.
 > **Companion references**: `acli/SKILL.md` (tool surface), `acli/references/*.md` (per-command deep refs), `agentic-qa-core/references/jira-publishing-gotchas.md` (ADF / MD converter edges — what breaks), `acli/references/adf-authoring-style.md` (ADF visual-formatting style — what reads well), `test-documentation/references/jira-setup.md` (TMS modality bootstrap), `.agents/jira-fields.json` + `.agents/jira-required.yaml` + `.agents/jira-workflows.json` (slug catalogs).
 
@@ -29,7 +29,7 @@ Workflow skills MUST NOT invoke `acli` directly. They invoke the pseudocode tag,
 | **Trivial lookup** (just summary / status / a key list — no custom fields) | `/acli` `workitem view`/`search` is fine | No materialization needed; cheaper than a sync. |
 | **Traceability** (link graph Story↔ATP↔ATR↔TC, Xray run status) | `/acli` / `/xray-cli` | The sync mirrors `issuelinks` but NOT Xray run/coverage state — read the live source. |
 
-Rule: **if you need the content of a custom field, NEVER `acli view` — sync it.** The synced files live under `.context/PBI/` per `CLAUDE.md` §9 (Jira is source of truth; local `.md` is a read-only cache). When a custom field is absent from the instance, the sync emits a pointer stub and the content lives in the issue's comments/description per `.agents/jira-required.yaml` → `fallback:`.
+Rule: **if you need the content of a custom field, NEVER `acli view` — sync it.** The synced files live under `.context/PBI/` per `AGENTS.md` §9 (Jira is source of truth; local `.md` is a read-only cache). When a custom field is absent from the instance, the sync emits a pointer stub and the content lives in the issue's comments/description per `.agents/jira-required.yaml` → `fallback:`.
 
 ### Role in TMS Modality `jira-native` (no Xray)
 
@@ -51,11 +51,11 @@ The command shapes live in `acli/SKILL.md` §Quick Start. The QA flow uses the s
 
 | QA step | Action (see `acli/SKILL.md`) | QA-specific substitutions |
 |---|---|---|
-| Auth | `jira auth login` | `--site "${ATLASSIAN_URL#https://}"` (slug derived from `ATLASSIAN_URL`), `--email "$ATLASSIAN_EMAIL"`, token piped from `$ATLASSIAN_API_TOKEN` (all from `.env`) |
+| Auth | `jira auth login` | `--site "$(bun run --silent jira:url --slug)"` (host from `.agents/project.yaml`, NOT an env var), `--email "$ATLASSIAN_EMAIL"`, token piped from `$ATLASSIAN_API_TOKEN` (both from `.env`) |
 | Verify auth | `jira auth status` | None (same as generic). MUST run before any bulk mutation — see Q6 below. |
 | Fetch a story DETAIL (input for `/sprint-testing` Phase 1) | **NOT acli** → `bun run jira:sync-issues get <KEY> --include-comments` | `<KEY>` = `{{PROJECT_KEY}}-NNN`. Reads ACs / scope / ATP / comments from the synced `.md` files — `acli view` returns null for custom fields. See "Reads vs writes" above. |
-| Transition Ready For QA → In Testing | `jira workitem transition --key <KEY> --status <STATUS>` | `<STATUS>` = `{{jira.status.story.in_test}}` |
-| Search QA work in flight (sprint dashboard) | `jira workitem search --jql <JQL> --paginate --json` | `<JQL>` = `project = {{PROJECT_KEY}} AND assignee = currentUser() AND status in ('Ready For QA','In Testing','Tested')` |
+| Transition Ready For QA → In Test | `jira workitem transition --key <KEY> --status <STATUS>` | `<STATUS>` = `{{jira.status.story.in_test}}` |
+| Search QA work in flight (sprint dashboard) | `jira workitem search --jql <JQL> --paginate --json` | `<JQL>` = `project = {{PROJECT_KEY}} AND assignee = currentUser() AND status in ('Ready For QA','In Test','QA Approved')` |
 | File a bug found mid-session | `jira workitem create --project <P> --type Bug --summary <S> --parent <PARENT>` | `<P>` = `{{PROJECT_KEY}}`; `<PARENT>` = parent Story key (`{{PROJECT_KEY}}-NNN`) |
 
 Slug resolution rule: anything wrapped in `{{jira.<slug>}}` MUST be resolved against `.agents/jira-fields.json` (custom-field IDs) or `.agents/jira-workflows.json` (status / transition names) before the command runs. Never substitute literal `customfield_` IDs or literal status names — see anti-patterns below.
@@ -81,13 +81,13 @@ These are repo-flavored companions to the tool-level anti-patterns T1-T4 in `acl
 | File | Owns | Regenerate with |
 |---|---|---|
 | `.agents/jira-fields.json` | Custom-field slug → numeric ID map | `bun run jira:sync-fields` |
-| `.agents/jira-workflows.json` | Status + transition slugs per work type | `bun run jira:sync-workflows` |
+| `.agents/jira-workflows.json` | Status + transition slugs per work type — **the authoritative source for every status / transition name; if a name is not there, it does not exist in the instance** | `bun run jira:sync-workflows` |
 | `.agents/jira-required.yaml` | Which fields are required per work type | Hand-curated; aligns with `jira-fields.json` |
 
-Slug syntax (per `CLAUDE.md` §7):
+Slug syntax (per `AGENTS.md` §7):
 
 - `{{jira.<slug>}}` — custom field ID (e.g. `{{jira.acceptance_criteria}}` → numeric workspace-specific ID)
-- `{{jira.status.<work_type>.<slug>}}` — status name (`{{jira.status.story.in_test}}` → `"In Testing"`)
+- `{{jira.status.<work_type>.<slug>}}` — status name (`{{jira.status.story.in_test}}` → `"In Test"`)
 - `{{jira.transition.<work_type>.<slug>}}` — transition name (`{{jira.transition.story.start_testing}}` → `"Start Testing"`)
 - `{{jira.work_type.<slug>}}` — Jira issue-type name (e.g. `{{jira.work_type.story}}` → `"Story"`)
 
@@ -120,6 +120,6 @@ This file evolves whenever:
 - New Jira custom field is added to `.agents/jira-fields.json` and a workflow skill needs to read or write it.
 - TMS modality semantics change (e.g. project moves from `jira-native` to `jira-xray` or vice versa).
 - A new anti-pattern surfaces from a real QA session and applies repo-wide.
-- The slug syntax in `CLAUDE.md` §7 evolves.
+- The slug syntax in `AGENTS.md` §7 evolves.
 
 Do NOT push tool-binary changes here — those belong in `acli/SKILL.md` (and therefore propagate to both QA and DEV boilerplates identically). Boundary rule: if the change is about `acli` the binary, it goes in `acli/SKILL.md`. If it's about how QA uses `acli`, it goes here.
