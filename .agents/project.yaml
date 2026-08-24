@@ -9,6 +9,34 @@ project:
   project_key: BK # Project key in issue tracker (e.g. PROJ, ACME, UPEX). The boilerplate ships this `null` on purpose — the consumer project fills it; never hardcode a real key here.
   webapp_domain: upexbunkai.vercel.app # Domain of the web application under test (e.g. myproject.com)
 
+# Branching strategy — resolved via git-flow-master Strategy Setup, confirmed with the user
+# 2026-08-24. Production branch on GitHub is `chore/BK-configure-agents-project-yaml` (origin/HEAD),
+# not a literal `main` — local `main` exists but is unused. Every other branch is a short-lived
+# prefixed topic branch (docs/*, test/*, chore/*, feat/*) that PRs directly against production.
+git_strategy:
+  strategy: github-flow
+  description: >
+    This project uses the `github-flow` flow. `chore/BK-configure-agents-project-yaml` is the
+    production branch (origin/HEAD); every change is a short-lived prefixed branch merged via PR.
+    Merge = deploy; rollback = revert the PR.
+  branches:
+    production: chore/BK-configure-agents-project-yaml
+    integration: null
+    ephemeral_pattern: null
+  protected:
+    - chore/BK-configure-agents-project-yaml
+  decisions:
+    promote_method: n/a
+    feature_merge: n/a
+    hotfix_policy: n/a
+  policy:
+    # Declared to match the GitHub host as verified by `bun run git:policy verify` on 2026-08-24:
+    # no ruleset actually blocks direct pushes to the production branch, and the "protepublic"
+    # ruleset carries an always-on bypass. Revisit if branch protection is tightened on GitHub.
+    direct_push_to_protected: allowed
+    admin_bypass: true
+    require_pr_reviews: 1
+
 backend:
   backend_repo: ../upex-bunkai-tms # Relative path to backend repository (e.g. ../my-backend)
   backend_stack: Next.js + Supabase + Vercel # Backend technology stack (e.g. Node.js + Express)
