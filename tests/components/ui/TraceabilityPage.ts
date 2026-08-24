@@ -17,9 +17,11 @@
  * - Per-ATC row:       [data-testid="traceability-atc-row-{atcId}"]
  * - Export button:     [data-testid="traceability-export-button"] (BK-50)
  *
- * NOTE: `@atc('BK-110'/'BK-111')` below are PLACEHOLDER IDs — no real Jira
- * Test issue exists yet for these UI flows. The real BK-45 Test issues
- * (BK-445..BK-464) are the ones that should eventually replace them.
+ * NOTE: `@atc('BK-110')` below is a PLACEHOLDER ID — no real Jira Test issue
+ * exists yet for this UI flow. The real BK-45 Test issues (BK-445..BK-464)
+ * are the ones that should eventually replace it. `BK-111` was the same kind
+ * of placeholder and has already been retired in favor of the real ID
+ * `BK-453` (see `expectNoStorySelectedPrompt` below).
  *
  * `exportSnapshot` / `expectAnonymousRedirectToLogin` / `expectNoShareAffordance`
  * below carry REAL BK-50 TC IDs (BK-331/BK-334/BK-336) — this is the same
@@ -73,16 +75,28 @@ export class TraceabilityPage extends UiBase {
 
   /**
    * ATC: Open the route with no `?story=` param - expects the prompt state,
-   * not the chain view and no fetch attempted (BK-45 TC-BK45-23).
+   * not the chain view and no fetch attempted (BK-45 TC-BK45-23 / BK-453).
+   *
+   * Registers a request collector before navigation (not a `page.route`
+   * mock/abort) so the guard observes rather than blocks — the point is
+   * proving the chain-fetch endpoint was never called, not preventing it.
    *
    * @param projectSlug - a valid Project slug
    */
-  @atc('BK-111')
+  @atc('BK-453')
   async expectNoStorySelectedPrompt(projectSlug: string): Promise<void> {
+    const chainFetchRequests: string[] = [];
+    this.page.on('request', (request) => {
+      if (/\/v1\/projects\/[^/]+\/traceability(?:\?|$)/.test(request.url())) {
+        chainFetchRequests.push(request.url());
+      }
+    });
+
     await this.page.goto(this.buildUrl(`/projects/${projectSlug}/traceability`));
 
     await expect(this.page.locator('[data-testid="traceability-no-story-selected"]')).toBeVisible({ timeout: 10000 });
     await expect(this.page.locator('[data-testid="traceability-chain-view"]')).not.toBeVisible();
+    expect(chainFetchRequests, 'expected no chain-fetch network request when the story param is absent').toHaveLength(0);
   }
 
   /**

@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "generatedAt": "2026-08-17T01:47:32.719Z",
+  "generatedAt": "2026-08-24T15:46:05.945Z",
   "components": {
     "api": [
       {
@@ -103,38 +103,38 @@
           {
             "id": "BK-110",
             "method": "expectChainRenders",
-            "line": 67
-          },
-          {
-            "id": "BK-111",
-            "method": "expectNoStorySelectedPrompt",
-            "line": 80
+            "line": 69
           },
           {
             "id": "BK-331",
             "method": "exportSnapshot",
-            "line": 100
+            "line": 114
           },
           {
             "id": "BK-334",
             "method": "expectAnonymousRedirectToLogin",
-            "line": 125
+            "line": 139
           },
           {
             "id": "BK-336",
             "method": "expectNoShareAffordance",
-            "line": 156
+            "line": 170
+          },
+          {
+            "id": "BK-453",
+            "method": "expectNoStorySelectedPrompt",
+            "line": 86
           }
         ]
       }
     ]
   },
-  "preconditions": [],
+  "steps": [],
   "summary": {
     "totalComponents": 6,
     "totalATCs": 16,
     "apiComponents": 3,
     "uiComponents": 3,
-    "preconditionModules": 0
+    "stepsModules": 0
   }
 }
