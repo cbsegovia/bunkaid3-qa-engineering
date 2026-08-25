@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "generatedAt": "2026-08-25T22:04:57.609Z",
+  "generatedAt": "2026-08-25T22:35:27.352Z",
   "components": {
     "api": [
       {
@@ -113,7 +113,7 @@
           {
             "id": "BK-336",
             "method": "expectNoShareAffordance",
-            "line": 398
+            "line": 482
           },
           {
             "id": "BK-445",
@@ -124,6 +124,16 @@
             "id": "BK-448",
             "method": "expectNonDisclosureNotFound",
             "line": 336
+          },
+          {
+            "id": "BK-449",
+            "method": "expectArchivedAcExcluded",
+            "line": 415
+          },
+          {
+            "id": "BK-450",
+            "method": "expectGhostAtcExcluded",
+            "line": 457
           },
           {
             "id": "BK-452",
@@ -147,7 +157,7 @@
   "steps": [],
   "summary": {
     "totalComponents": 6,
-    "totalATCs": 19,
+    "totalATCs": 21,
     "apiComponents": 3,
     "uiComponents": 3,
     "stepsModules": 0
