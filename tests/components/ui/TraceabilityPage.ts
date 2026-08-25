@@ -348,6 +348,47 @@ export class TraceabilityPage extends UiBase {
   }
 
   /**
+   * ATC: Open the chain for a draft-status Story - expects the exact same
+   * fully-populated chain view as any other lifecycle status, with no extra
+   * gate, redirect, or restricted-content banner imposed on drafts (BK-45
+   * State-Transition / EC11, TC-BK45-20 / BK-452).
+   *
+   * Guards against an over-eager access-control regression: a developer
+   * hardening the non-disclosure rules (BK-448) or the archived-story gate
+   * could plausibly add a defensive "only show published stories" check that
+   * blocks drafts too - an over-restriction bug, not a security fix. This is
+   * a narrower, negative-space companion to `expectChainRenders`
+   * (`@atc('BK-445')`): that ATC proves every layer of a fully-covered chain
+   * renders; this one proves lifecycle status alone is never a gating
+   * condition, by asserting none of the screen's known gate/banner states
+   * appear for a Story whose `status` is `draft`.
+   *
+   * EMPIRICALLY CONFIRMED (2026-08-25): the existing BK-45 seeded fixture
+   * story already carries `status: "draft"` (`GET /v1/user-stories/{id}`),
+   * so this reuses that same fixture rather than seeding a dedicated draft
+   * story - matching the TC's own ROI note ("any existing draft-status story
+   * works, no dedicated fixture required").
+   *
+   * @param args - the Project slug and a draft-status Story to open
+   * @param args.projectSlug - Project slug the Story belongs to
+   * @param args.userStoryId - a Story whose lifecycle `status` is `draft`
+   */
+  @atc('BK-452')
+  async expectDraftStoryHasNoLifecycleGate(args: { projectSlug: string, userStoryId: string }): Promise<void> {
+    await this.goto(args);
+
+    expect(new URL(this.page.url()).pathname).toBe(`/projects/${args.projectSlug}/traceability`);
+
+    const chainView = this.page.locator('[data-testid="traceability-chain-view"]');
+    await expect(chainView).toBeVisible({ timeout: 15000 });
+
+    await expect(this.page.locator('[data-testid="workbench-not-found"]')).toHaveCount(0);
+    await expect(this.page.locator('[data-testid="traceability-error"]')).toHaveCount(0);
+    await expect(this.page.locator('[data-testid="traceability-archived-banner"]')).toHaveCount(0);
+    await expect(this.page.locator('[data-testid="traceability-no-story-selected"]')).toHaveCount(0);
+  }
+
+  /**
    * ATC: Enumerate the screen's controls - expects "Export snapshot" to be
    * the only mutating control, with no share / publish / copy-link
    * affordance anywhere (BK-50 TC06, Option E scope guard, comments
