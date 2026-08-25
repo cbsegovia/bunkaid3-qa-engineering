@@ -16,6 +16,12 @@
  * - Per-AC card:       [data-testid="traceability-ac-{acId}"]
  * - Per-ATC row:       [data-testid="traceability-atc-row-{atcId}"]
  * - Export button:     [data-testid="traceability-export-button"] (BK-50)
+ * - Story unreachable: [data-testid="workbench-not-found"] (shared app-wide
+ *                       not-found state — confirmed live 2026-08-25 for the
+ *                       "story is foreign or nonexistent" case; the
+ *                       `traceability-error` / `traceability-retry` ids
+ *                       above do NOT appear on this route today, see
+ *                       `expectNonDisclosureNotFound` below for detail)
  *
  * NOTE: `@atc('BK-110')` was a PLACEHOLDER ID — no real Jira Test issue
  * existed yet for this UI flow. It has been retired in favor of the real ID
@@ -228,6 +234,60 @@ export class TraceabilityPage extends UiBase {
     finally {
       await anonymousContext.close();
     }
+  }
+
+  /**
+   * ATC: Open the traceability route with a target story ID the caller
+   * cannot see (a same-project random UUID standing in for "foreign or
+   * nonexistent" - see the component-level empirical note below for why the
+   * two collapse into the same observable outcome) - expects the shared
+   * app-wide not-found state, never the chain view, and zero chain data
+   * (AC/ATC/Test/Run/Defect) anywhere in the DOM (BK-45 AC-05 / TC-BK45-16,
+   * Decision Table rules 3+4, collapsed - same outcome, deliberate
+   * non-disclosure).
+   *
+   * CORRECTED MECHANISM (empirically confirmed live against staging,
+   * 2026-08-25 - supersedes the component docblock's `traceability-error` /
+   * `traceability-retry` testids and the doctrine's assumed "User story not
+   * found." literal string and network-interceptable 404, none of which
+   * exist on this build for this route):
+   * - The route is server-rendered as a single document navigation that
+   *   always responds HTTP 200, whether the story resolves or not - the
+   *   underlying `GET /v1/projects/{id}/traceability?story={id}` 404 (see
+   *   `TraceabilityApi.expectMismatchedPairNotFound`, `@atc('BK-109')`)
+   *   happens server-side and is never exposed as a client-observable
+   *   network response, so there is nothing for `page.waitForResponse` to
+   *   catch here, retry or not.
+   * - The client renders the shared app-wide `[data-testid="workbench-not-
+   *   found"]` state ("This item is no longer available" / "It may have
+   *   been deleted, or you don't have access to it. The rest of the project
+   *   is still here." / "Back to project") - NOT `traceability-error`, and
+   *   there is no Retry control on this state at all.
+   * - The literal string "User story not found." does not appear anywhere
+   *   in the DOM for this route today (checked via full-page `innerHTML`).
+   *   The non-disclosure property that IS provable at this layer, and is
+   *   this ATC's actual contract, is: the SAME generic not-found state
+   *   renders regardless of *why* the story is unreachable, and zero chain
+   *   data ever leaks into it. The distinct 404 status code + `not_found`
+   *   error code are already asserted at the API layer by BK-109.
+   *
+   * @param args - the Project slug and the target Story ID to probe
+   * @param args.projectSlug - Project slug to build the route against
+   * @param args.targetStoryId - a foreign-workspace story ID or a random
+   *   nonexistent UUID (caller's responsibility to generate/discover)
+   */
+  @atc('BK-448')
+  async expectNonDisclosureNotFound(args: { projectSlug: string, targetStoryId: string }): Promise<void> {
+    await this.goto({ projectSlug: args.projectSlug, userStoryId: args.targetStoryId });
+
+    await expect(this.page.locator('[data-testid="workbench-not-found"]')).toBeVisible({ timeout: 10000 });
+    await expect(this.page.locator('[data-testid="traceability-chain-view"]')).not.toBeVisible();
+
+    const acCount = await this.page.locator('[data-testid^="traceability-ac-"]').count();
+    expect(acCount, 'expected zero AC cards to leak for an inaccessible story').toBe(0);
+
+    const atcRowCount = await this.page.locator('[data-testid^="traceability-atc-row-"]').count();
+    expect(atcRowCount, 'expected zero ATC rows to leak for an inaccessible story').toBe(0);
   }
 
   /**
