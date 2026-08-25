@@ -150,6 +150,63 @@ export class TraceabilityPage extends UiBase {
   }
 
   /**
+   * ATC: Open a Story whose chain is exactly 1 layer deep at every step
+   * through Run (1 AC -> 1 ATC -> 1 Test -> 1 Run) - expects the single-row
+   * case to render exactly, not as a zero-row false-empty state and not with
+   * any duplicated row (BK-45 AC-01, BVA-lower-boundary partition / TC-BK45-02
+   * / BK-456).
+   *
+   * Deliberately narrower than `expectChainRenders` (@atc('BK-445')): no
+   * Defect-layer assertion (out of this TC's stated Given/Then scope), and
+   * exact-count checks (`toHaveCount(1)`) rather than `>= 1` checks - the
+   * exactness IS the boundary being tested, not an incidental side effect of
+   * happy-path coverage.
+   *
+   * Fixed assertions:
+   *  - chain-view root visible
+   *  - exactly one AC card renders (not zero, not more than one)
+   *  - that AC card shows a non-empty title
+   *  - exactly one ATC row renders inside it (not zero, not more than one)
+   *  - that ATC row shows a non-empty title, layer badge, linked Test name,
+   *    and Run status pill
+   *
+   * @param args - the Project slug and the Story to open
+   * @param args.projectSlug - Project slug the Story belongs to
+   * @param args.userStoryId - Story to open the chain for (must already
+   *   satisfy the exactly-1-per-layer precondition through Run)
+   */
+  @atc('BK-456')
+  async expectMinimalChainRenders(args: { projectSlug: string, userStoryId: string }): Promise<void> {
+    await this.goto(args);
+
+    const chainView = this.page.locator('[data-testid="traceability-chain-view"]');
+    await expect(chainView).toBeVisible({ timeout: 15000 });
+
+    const acCards = chainView.locator('[data-testid^="traceability-ac-"]');
+    await expect(acCards).toHaveCount(1);
+
+    const acCard = acCards.first();
+    await expect(acCard).not.toBeEmpty();
+
+    const atcRows = acCard.locator('[data-testid^="traceability-atc-row-"]');
+    await expect(atcRows).toHaveCount(1);
+
+    const atcRow = atcRows.first();
+
+    const atcTitle = atcRow.locator('div.truncate.text-fg-1').first();
+    await expect(atcTitle).not.toHaveText('');
+
+    const atcLayerBadge = atcRow.locator('span.status-chip').first();
+    await expect(atcLayerBadge).not.toHaveText('');
+
+    const testName = atcRow.locator('span.truncate.text-fg-2').first();
+    await expect(testName).not.toHaveText('');
+
+    const runStatusPill = atcRow.locator('span.status-chip').nth(1);
+    await expect(runStatusPill).not.toHaveText('');
+  }
+
+  /**
    * ATC: Open the route with no `?story=` param - expects the prompt state,
    * not the chain view and no fetch attempted (BK-45 TC-BK45-23 / BK-453).
    *
