@@ -796,6 +796,71 @@ export class TraceabilityPage extends UiBase {
   }
 
   /**
+   * ATC: Open a Story hosting an ATC missing a layer downstream of itself
+   * (no Test chained, a Test chained but zero Runs ever started, or a Run
+   * with zero linked Defects) - expects the exact layer-specific
+   * "awaiting data" copy in the relevant cell(s), never a null or blank
+   * cell (BK-45, TC-BK45-09 / BK-461).
+   *
+   * CORRECTED SCOPE (2026-08-25): the TC's Jira Examples table listed 5 rows
+   * under one ambiguous "missing_layer" label, three of which all said
+   * "Run" with three different, seemingly contradictory copies. Confirmed
+   * live against staging that this was a labeling problem, not a real
+   * product ambiguity - the 3 "Run" rows actually span TWO different CELLS
+   * (Run and Defect) across the SAME TWO real preconditions:
+   * - No Test chained at all: Test cell = "No test written yet", Run cell
+   *   = "Awaiting test", Defect cell = "Awaiting test" too.
+   * - A Test chained, zero Runs ever started: Run cell = "No run recorded
+   *   yet", Defect cell = "Awaiting first run" (this is the Jira table's
+   *   mislabeled 4th "Run" row - it is actually the Defect cell's
+   *   placeholder for this precondition, not a second Run-cell copy).
+   * A Run existing with zero linked Defects ("None linked") was already
+   * confirmed as its own, unambiguous case - not part of the corrected
+   * scope above.
+   *
+   * Deliberately a single flexible method rather than one method per cell:
+   * each precondition below only has meaningful copy in a subset of the 3
+   * cells, so the caller passes only the cell(s) that precondition
+   * populates, per Test file below.
+   *
+   * @param args - the Project slug, Story, target ATC, and whichever cell copy applies to it
+   * @param args.projectSlug - Project slug the Story belongs to
+   * @param args.userStoryId - the Story hosting the target ATC
+   * @param args.atcId - the ATC missing the layer(s) under test
+   * @param args.expectedTestCopy - expected Test-cell copy, when the ATC has no Test chained
+   * @param args.expectedRunCopy - expected Run-cell copy, when relevant
+   * @param args.expectedDefectCopy - expected Defect-cell copy, when relevant
+   */
+  @atc('BK-461')
+  async expectLayerGapCopy(
+    args: {
+      projectSlug: string
+      userStoryId: string
+      atcId: string
+      expectedTestCopy?: string
+      expectedRunCopy?: string
+      expectedDefectCopy?: string
+    },
+  ): Promise<void> {
+    await this.goto(args);
+
+    const atcRow = this.page.locator(`[data-testid="traceability-atc-row-${args.atcId}"]`);
+    await expect(atcRow).toBeVisible();
+
+    const cells = atcRow.locator('> div');
+
+    if (args.expectedTestCopy !== undefined) {
+      await expect(cells.nth(1)).toContainText(args.expectedTestCopy);
+    }
+    if (args.expectedRunCopy !== undefined) {
+      await expect(cells.nth(2)).toContainText(args.expectedRunCopy);
+    }
+    if (args.expectedDefectCopy !== undefined) {
+      await expect(cells.nth(3)).toContainText(args.expectedDefectCopy);
+    }
+  }
+
+  /**
    * ATC: Enumerate the screen's controls - expects "Export snapshot" to be
    * the only mutating control, with no share / publish / copy-link
    * affordance anywhere (BK-50 TC06, Option E scope guard, comments
