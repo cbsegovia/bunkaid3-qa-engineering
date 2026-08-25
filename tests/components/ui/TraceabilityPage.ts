@@ -17,11 +17,30 @@
  * - Per-ATC row:       [data-testid="traceability-atc-row-{atcId}"]
  * - Export button:     [data-testid="traceability-export-button"] (BK-50)
  *
- * NOTE: `@atc('BK-110')` below is a PLACEHOLDER ID — no real Jira Test issue
- * exists yet for this UI flow. The real BK-45 Test issues (BK-445..BK-464)
- * are the ones that should eventually replace it. `BK-111` was the same kind
- * of placeholder and has already been retired in favor of the real ID
- * `BK-453` (see `expectNoStorySelectedPrompt` below).
+ * NOTE: `@atc('BK-110')` was a PLACEHOLDER ID — no real Jira Test issue
+ * existed yet for this UI flow. It has been retired in favor of the real ID
+ * `BK-445` (see `expectChainRenders` below). The remaining BK-45 Test issues
+ * (BK-446..BK-464) are still pending the same graduation. `BK-111` was the
+ * same kind of placeholder and has already been retired in favor of the
+ * real ID `BK-453` (see `expectNoStorySelectedPrompt` below).
+ *
+ * Sub-row layer selectors (confirmed via live DOM inspection against
+ * staging — the component ships no `data-testid` for these 4 cells, only
+ * structural CSS classes, scoped under the confirmed
+ * `[data-testid="traceability-atc-row-{atcId}"]` root):
+ * - ATC title:        1st column > `div.truncate.text-fg-1`
+ * - ATC layer badge:  1st column > `span.status-chip` (text content is the
+ *                     layer, e.g. "API"/"UI"/"Unit" — `data-status` on this
+ *                     element is unrelated, do not read it for layer)
+ * - Test name:        2nd column > `span.truncate.text-fg-2`
+ * - Run status pill:  3rd column > `span.status-chip` (both `data-status`
+ *                     attr and text content carry the real run status,
+ *                     e.g. `data-status="fail"` / text "Fail")
+ * - Defect block:     4th column > repeated `div.flex.items-center.gap-1.5.text-xs`,
+ *                     each with `span.truncate.text-fg-2` (defect title) +
+ *                     `span.status-chip[data-status]` (defect status). The
+ *                     defect ID is NEVER rendered in the DOM — only title +
+ *                     status are asserted; do not invent an ID selector.
  *
  * `exportSnapshot` / `expectAnonymousRedirectToLogin` / `expectNoShareAffordance`
  * below carry REAL BK-50 TC IDs (BK-331/BK-334/BK-336) — this is the same
@@ -58,19 +77,70 @@ export class TraceabilityPage extends UiBase {
   // ============================================
 
   /**
-   * ATC: Open a fully covered Story's chain - expects the chain view to render
+   * ATC: Open a fully covered Story's chain - expects every layer
+   * (AC -> ATC -> Test -> Run -> Defect) to render with no broken/null
+   * cells, on a single page load, no extra navigation (BK-45 AC-01).
    *
-   * IMPORTANT: assumes the target Story has at least one AC with a bound ATC.
+   * IMPORTANT: assumes the target Story has at least one AC, each bound
+   * through to at least one ATC, Test, Run and linked Defect.
+   *
+   * Fixed assertions:
+   *  - chain-view root visible
+   *  - every AC card shows its title + at least one bound ATC row
+   *  - every ATC row shows its title + layer badge + linked Test name
+   *  - every Test shows its single latest Run status pill
+   *  - every Run shows its linked Defect(s): title + status (no defect ID
+   *    is ever rendered in the DOM - see component docblock)
    *
    * @param args - the Project slug and the Story to open
    * @param args.projectSlug - Project slug the Story belongs to
    * @param args.userStoryId - Story to open the chain for
    */
-  @atc('BK-110')
+  @atc('BK-445')
   async expectChainRenders(args: { projectSlug: string, userStoryId: string }): Promise<void> {
     await this.goto(args);
 
-    await expect(this.page.locator('[data-testid="traceability-chain-view"]')).toBeVisible({ timeout: 15000 });
+    const chainView = this.page.locator('[data-testid="traceability-chain-view"]');
+    await expect(chainView).toBeVisible({ timeout: 15000 });
+
+    const acCards = chainView.locator('[data-testid^="traceability-ac-"]');
+    await expect(acCards.first()).toBeVisible();
+
+    const acCount = await acCards.count();
+    for (let acIndex = 0; acIndex < acCount; acIndex += 1) {
+      const acCard = acCards.nth(acIndex);
+      await expect(acCard).not.toBeEmpty();
+
+      const atcRows = acCard.locator('[data-testid^="traceability-atc-row-"]');
+      const atcCount = await atcRows.count();
+      expect(atcCount, 'expected every AC card to show at least one bound ATC row').toBeGreaterThan(0);
+
+      for (let atcIndex = 0; atcIndex < atcCount; atcIndex += 1) {
+        const atcRow = atcRows.nth(atcIndex);
+
+        const atcTitle = atcRow.locator('div.truncate.text-fg-1').first();
+        await expect(atcTitle).not.toHaveText('');
+
+        const atcLayerBadge = atcRow.locator('span.status-chip').first();
+        await expect(atcLayerBadge).not.toHaveText('');
+
+        const testName = atcRow.locator('span.truncate.text-fg-2').first();
+        await expect(testName).not.toHaveText('');
+
+        const runStatusPill = atcRow.locator('span.status-chip').nth(1);
+        await expect(runStatusPill).not.toHaveText('');
+
+        const defectBlocks = atcRow.locator('div.flex.items-center.gap-1\\.5.text-xs');
+        const defectCount = await defectBlocks.count();
+        expect(defectCount, 'expected every Run to show at least one linked Defect').toBeGreaterThan(0);
+
+        for (let defectIndex = 0; defectIndex < defectCount; defectIndex += 1) {
+          const defectBlock = defectBlocks.nth(defectIndex);
+          await expect(defectBlock.locator('span.truncate.text-fg-2').first()).not.toHaveText('');
+          await expect(defectBlock.locator('span.status-chip').first()).not.toHaveText('');
+        }
+      }
+    }
   }
 
   /**
