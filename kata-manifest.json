@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "generatedAt": "2026-08-25T22:35:27.352Z",
+  "generatedAt": "2026-08-25T22:42:48.479Z",
   "components": {
     "api": [
       {
@@ -113,7 +113,7 @@
           {
             "id": "BK-336",
             "method": "expectNoShareAffordance",
-            "line": 482
+            "line": 520
           },
           {
             "id": "BK-445",
@@ -134,6 +134,11 @@
             "id": "BK-450",
             "method": "expectGhostAtcExcluded",
             "line": 457
+          },
+          {
+            "id": "BK-451",
+            "method": "expectArchivedStoryRendersReadOnly",
+            "line": 498
           },
           {
             "id": "BK-452",
@@ -157,7 +162,7 @@
   "steps": [],
   "summary": {
     "totalComponents": 6,
-    "totalATCs": 21,
+    "totalATCs": 22,
     "apiComponents": 3,
     "uiComponents": 3,
     "stepsModules": 0
