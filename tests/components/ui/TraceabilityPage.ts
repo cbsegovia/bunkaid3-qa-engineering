@@ -389,6 +389,90 @@ export class TraceabilityPage extends UiBase {
   }
 
   /**
+   * ATC: Open the chain for a Story with 1 active AC (1 bound ATC) and 1
+   * archived AC (1 bound ATC) - expects only the active pair to render, with
+   * the archived AC and its ATC fully absent anywhere on the page (BK-45
+   * AC-06, TC-BK45-17 / BK-449).
+   *
+   * Data-integrity regression guard: proves the chain-assembly query filters
+   * archived acceptance criteria (and, transitively, their bound ATCs), not
+   * just archived ATCs on their own row.
+   *
+   * SEEDED FIXTURE (2026-08-25, via the real `DELETE /v1/acceptance-criteria/{id}`
+   * archive endpoint - no direct DB write): Story
+   * `f7a0f4d8-cb40-4643-9233-289b90a6a6dd` in `bk-45-traceability-fixtures`,
+   * AC `fdc05f62-db3d-4417-a705-9e5bf1ca43ca` ("Active AC - stays visible")
+   * active with ATC `dea99e3e-e740-4aa6-b7dc-4dc5f7cbb719`; AC
+   * `498689c1-01ec-4e5f-8fea-c09db03a8517` ("Archived AC - must vanish
+   * (BK-449)") archived with ATC `c00884b4-9fd9-4746-889f-13e2631938b6`.
+   *
+   * @param args - the Project slug and the Story to open
+   * @param args.projectSlug - Project slug the Story belongs to
+   * @param args.userStoryId - a Story with one active and one archived AC/ATC pair
+   * @param args.archivedAcTitle - the archived AC's title, asserted absent from the page
+   * @param args.archivedAtcTitle - the archived AC's bound ATC title, asserted absent from the page
+   */
+  @atc('BK-449')
+  async expectArchivedAcExcluded(
+    args: { projectSlug: string, userStoryId: string, archivedAcTitle: string, archivedAtcTitle: string },
+  ): Promise<void> {
+    await this.goto(args);
+
+    const chainView = this.page.locator('[data-testid="traceability-chain-view"]');
+    await expect(chainView).toBeVisible({ timeout: 15000 });
+
+    const acCards = chainView.locator('[data-testid^="traceability-ac-"]');
+    await expect(acCards).toHaveCount(1);
+
+    await expect(this.page.getByText(args.archivedAcTitle, { exact: true })).toHaveCount(0);
+    await expect(this.page.getByText(args.archivedAtcTitle, { exact: true })).toHaveCount(0);
+  }
+
+  /**
+   * ATC: Open the chain for a Story whose sole active AC is bound to two
+   * ATCs - one in the Story's own module, one in a descendant module that
+   * was archived via the real module-subtree archive endpoint - expects only
+   * the surviving ATC to render, with the "ghost" ATC fully excluded despite
+   * its own `archived_at` staying null (BK-45 Error-Guessing / EC7, TC-BK45-18
+   * / BK-450).
+   *
+   * Named regression class: a naive `WHERE atc.archived_at IS NULL` filter
+   * would let this ATC leak through, because the archival signal lives on an
+   * ancestor module, not the ATC's own row. Proves the chain-assembly query's
+   * ancestor-aware exclusion, not just a same-row check.
+   *
+   * SEEDED FIXTURE (2026-08-25, via the real module-subtree archive endpoint
+   * `DELETE /v1/modules/{id}` - no direct DB write): module
+   * `bk-45-fixtures/ghost-sub` created under the Story's own module then
+   * archived, hosting ATC `6b5932c5-aa79-4115-8373-c9ec21bee767` ("Ghost ATC
+   * - ancestor module will be archived (BK-450)") bound to the same active AC
+   * `fdc05f62-db3d-4417-a705-9e5bf1ca43ca` as `expectArchivedAcExcluded`'s
+   * surviving ATC.
+   *
+   * @param args - the Project slug and the Story to open
+   * @param args.projectSlug - Project slug the Story belongs to
+   * @param args.userStoryId - a Story whose active AC has a ghost ATC under an archived ancestor module
+   * @param args.ghostAtcTitle - the ghost ATC's title, asserted absent from the page
+   */
+  @atc('BK-450')
+  async expectGhostAtcExcluded(
+    args: { projectSlug: string, userStoryId: string, ghostAtcTitle: string },
+  ): Promise<void> {
+    await this.goto(args);
+
+    const chainView = this.page.locator('[data-testid="traceability-chain-view"]');
+    await expect(chainView).toBeVisible({ timeout: 15000 });
+
+    const acCards = chainView.locator('[data-testid^="traceability-ac-"]');
+    await expect(acCards).toHaveCount(1);
+
+    const atcRows = acCards.first().locator('[data-testid^="traceability-atc-row-"]');
+    await expect(atcRows).toHaveCount(1);
+
+    await expect(this.page.getByText(args.ghostAtcTitle, { exact: true })).toHaveCount(0);
+  }
+
+  /**
    * ATC: Enumerate the screen's controls - expects "Export snapshot" to be
    * the only mutating control, with no share / publish / copy-link
    * affordance anywhere (BK-50 TC06, Option E scope guard, comments
