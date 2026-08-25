@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "generatedAt": "2026-08-25T15:16:22.480Z",
+  "generatedAt": "2026-08-25T16:57:38.522Z",
   "components": {
     "api": [
       {
@@ -103,27 +103,32 @@
           {
             "id": "BK-331",
             "method": "exportSnapshot",
-            "line": 184
+            "line": 190
           },
           {
             "id": "BK-334",
             "method": "expectAnonymousRedirectToLogin",
-            "line": 209
+            "line": 215
           },
           {
             "id": "BK-336",
             "method": "expectNoShareAffordance",
-            "line": 240
+            "line": 300
           },
           {
             "id": "BK-445",
             "method": "expectChainRenders",
-            "line": 99
+            "line": 105
+          },
+          {
+            "id": "BK-448",
+            "method": "expectNonDisclosureNotFound",
+            "line": 279
           },
           {
             "id": "BK-453",
             "method": "expectNoStorySelectedPrompt",
-            "line": 156
+            "line": 162
           }
         ]
       }
@@ -132,7 +137,7 @@
   "steps": [],
   "summary": {
     "totalComponents": 6,
-    "totalATCs": 16,
+    "totalATCs": 17,
     "apiComponents": 3,
     "uiComponents": 3,
     "stepsModules": 0
