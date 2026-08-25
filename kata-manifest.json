@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "generatedAt": "2026-08-25T22:42:48.479Z",
+  "generatedAt": "2026-08-25T23:15:38.891Z",
   "components": {
     "api": [
       {
@@ -113,12 +113,17 @@
           {
             "id": "BK-336",
             "method": "expectNoShareAffordance",
-            "line": 520
+            "line": 805
           },
           {
             "id": "BK-445",
             "method": "expectChainRenders",
             "line": 105
+          },
+          {
+            "id": "BK-446",
+            "method": "expectZeroAcAuthoringGap",
+            "line": 528
           },
           {
             "id": "BK-448",
@@ -151,9 +156,49 @@
             "line": 219
           },
           {
+            "id": "BK-455",
+            "method": "expectAtcRepeatsUnderEachBoundAc",
+            "line": 650
+          },
+          {
             "id": "BK-456",
             "method": "expectMinimalChainRenders",
             "line": 178
+          },
+          {
+            "id": "BK-457",
+            "method": "expectRunStatusPillMatchesTerminalStatus",
+            "line": 681
+          },
+          {
+            "id": "BK-458",
+            "method": "expectInFlightRunNotMisleading",
+            "line": 712
+          },
+          {
+            "id": "BK-459",
+            "method": "expectDefectsOrderedNewestFirst",
+            "line": 749
+          },
+          {
+            "id": "BK-460",
+            "method": "expectSharedRunHidesForeignDefect",
+            "line": 785
+          },
+          {
+            "id": "BK-462",
+            "method": "expectUncoveredStripForZeroAtcAc",
+            "line": 580
+          },
+          {
+            "id": "BK-463",
+            "method": "expectMixedCoverageRendersSideBySide",
+            "line": 614
+          },
+          {
+            "id": "BK-464",
+            "method": "expectZeroCoverageBannerRenders",
+            "line": 553
           }
         ]
       }
@@ -162,7 +207,7 @@
   "steps": [],
   "summary": {
     "totalComponents": 6,
-    "totalATCs": 22,
+    "totalATCs": 31,
     "apiComponents": 3,
     "uiComponents": 3,
     "stepsModules": 0

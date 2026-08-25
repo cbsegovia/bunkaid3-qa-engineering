@@ -511,6 +511,291 @@ export class TraceabilityPage extends UiBase {
   }
 
   /**
+   * ATC: Open a Story with zero acceptance criteria - expects the
+   * authoring-gap copy "No acceptance criteria yet", visibly distinct from
+   * the AC-03 zero-coverage banner, and zero chain rows at any layer (BK-45
+   * AC-07, TC-BK45-13 / BK-446).
+   *
+   * `resolveStoryChainViewState` renders two different empty-state copies
+   * for two different reasons (nobody authored ACs yet vs. ACs exist but
+   * nothing is bound to them) - this ATC proves the authoring-gap branch
+   * specifically, and that it never collapses into the other's banner.
+   *
+   * @param args - the Project slug and the zero-AC Story to open
+   * @param args.projectSlug - Project slug the Story belongs to
+   * @param args.userStoryId - a Story with zero acceptance criteria
+   */
+  @atc('BK-446')
+  async expectZeroAcAuthoringGap(args: { projectSlug: string, userStoryId: string }): Promise<void> {
+    await this.goto(args);
+
+    await expect(this.page.locator('[data-testid="traceability-empty-zero-ac"]')).toContainText('No acceptance criteria yet');
+    await expect(this.page.locator('[data-testid="traceability-zero-coverage-banner"]')).toHaveCount(0);
+
+    await expect(this.page.locator('[data-testid^="traceability-ac-"]')).toHaveCount(0);
+    await expect(this.page.locator('[data-testid^="traceability-atc-row-"]')).toHaveCount(0);
+  }
+
+  /**
+   * ATC: Open a Story with 1+ acceptance criteria, none of which has an ATC
+   * bound - expects the distinct "No coverage anywhere on this story"
+   * banner (never a blank screen or spinner) alongside each AC's own
+   * "Uncovered · 0 ATCs bound" strip (BK-45 AC-03, TC-BK45-12 / BK-464).
+   *
+   * Deliberately distinct from `expectZeroAcAuthoringGap` (`@atc('BK-446')`):
+   * this Story genuinely has ACs, just zero coverage on any of them - a
+   * different authoring state than never having written an AC at all.
+   *
+   * @param args - the Project slug and the Story to open
+   * @param args.projectSlug - Project slug the Story belongs to
+   * @param args.userStoryId - a Story with 1+ ACs, all with zero bound ATCs
+   */
+  @atc('BK-464')
+  async expectZeroCoverageBannerRenders(args: { projectSlug: string, userStoryId: string }): Promise<void> {
+    await this.goto(args);
+
+    await expect(this.page.locator('[data-testid="traceability-empty-zero-ac"]')).toHaveCount(0);
+    await expect(this.page.locator('[data-testid="traceability-zero-coverage-banner"]')).toContainText('No coverage anywhere on this story');
+
+    const acCards = this.page.locator('[data-testid^="traceability-ac-"]');
+    await expect(acCards).toHaveCount(1);
+    await expect(acCards.first().locator('[data-testid="uncovered-strip"]')).toBeVisible();
+  }
+
+  /**
+   * ATC: Open a Story with 1+ covered ACs and at least one AC with zero
+   * bound ATCs - expects the zero-ATC AC to show the "Uncovered · 0 ATCs
+   * bound" strip as a well-formed row, never blank or broken (BK-45,
+   * TC-BK45-10 / BK-462).
+   *
+   * This is the primary coverage-gap-visibility signal the BK-44 epic exists
+   * to surface - a silently hidden or blank uncovered row would defeat the
+   * epic's purpose while leaving covered-AC rendering fully intact.
+   *
+   * @param args - the Project slug and the Story to open
+   * @param args.projectSlug - Project slug the Story belongs to
+   * @param args.userStoryId - a Story with 1+ covered ACs and 1+ zero-ATC AC
+   * @param args.uncoveredAcTitle - the zero-ATC AC's title, to scope the strip assertion
+   */
+  @atc('BK-462')
+  async expectUncoveredStripForZeroAtcAc(
+    args: { projectSlug: string, userStoryId: string, uncoveredAcTitle: string },
+  ): Promise<void> {
+    await this.goto(args);
+
+    const acCard = this.page.locator('[data-testid^="traceability-ac-"]').filter({ hasText: args.uncoveredAcTitle });
+    await expect(acCard).toBeVisible();
+
+    const strip = acCard.locator('[data-testid="uncovered-strip"]');
+    await expect(strip).toBeVisible();
+    await expect(strip).toContainText('Uncovered');
+    await expect(strip).not.toBeEmpty();
+  }
+
+  /**
+   * ATC: Open a Story with 2+ ACs where some have a full covered chain and
+   * some have zero ATCs bound - expects both states to render correctly
+   * side by side on the same page load, with no state bleeding from one AC
+   * card into another (BK-45, TC-BK45-11 / BK-463, the ATP's explicitly
+   * flagged untested residual before this pass).
+   *
+   * `resolveStoryChainViewState` has no dedicated "partial/mixed" state -
+   * each `AcCard` independently decides covered-vs-uncovered. This proves
+   * that independence live: a regression causing one card's render to leak
+   * into a sibling's is invisible to any test that renders a single
+   * `AcCard` in isolation.
+   *
+   * @param args - the Project slug and the Story to open
+   * @param args.projectSlug - Project slug the Story belongs to
+   * @param args.userStoryId - a Story with mixed AC coverage
+   * @param args.coveredAcTitle - the covered AC's title
+   * @param args.uncoveredAcTitle - the uncovered AC's title
+   */
+  @atc('BK-463')
+  async expectMixedCoverageRendersSideBySide(
+    args: { projectSlug: string, userStoryId: string, coveredAcTitle: string, uncoveredAcTitle: string },
+  ): Promise<void> {
+    await this.goto(args);
+
+    await expect(this.page.locator('[data-testid="traceability-zero-coverage-banner"]')).toHaveCount(0);
+
+    const coveredAc = this.page.locator('[data-testid^="traceability-ac-"]').filter({ hasText: args.coveredAcTitle });
+    await expect(coveredAc).toBeVisible();
+    await expect(coveredAc.locator('[data-testid^="traceability-atc-row-"]')).toHaveCount(1);
+    await expect(coveredAc.locator('[data-testid="uncovered-strip"]')).toHaveCount(0);
+
+    const uncoveredAc = this.page.locator('[data-testid^="traceability-ac-"]').filter({ hasText: args.uncoveredAcTitle });
+    await expect(uncoveredAc).toBeVisible();
+    await expect(uncoveredAc.locator('[data-testid="uncovered-strip"]')).toBeVisible();
+    await expect(uncoveredAc.locator('[data-testid^="traceability-atc-row-"]')).toHaveCount(0);
+  }
+
+  /**
+   * ATC: Open a Story where one ATC is bound to two acceptance criteria -
+   * expects the ATC's chain segment to render in full under EACH bound AC,
+   * never deduplicated or collapsed to a single appearance (BK-45 EP /
+   * A5+EC3 "no ATC dedup across ACs" ruling, TC-BK45-25 / BK-455).
+   *
+   * A developer's instinct commonly fights this rule - deduplicating
+   * repeated rows is the default behavior for most list-rendering
+   * components. A regression that keys on ATC identity alone (instead of
+   * the AC-ATC binding pair) would silently understate one AC's real
+   * coverage - a traceability-integrity bug this Epic exists to prevent.
+   *
+   * @param args - the Project slug and the Story to open
+   * @param args.projectSlug - Project slug the Story belongs to
+   * @param args.userStoryId - a Story where one ATC is bound to 2 ACs
+   * @param args.sharedAtcId - the ATC bound to both ACs
+   */
+  @atc('BK-455')
+  async expectAtcRepeatsUnderEachBoundAc(
+    args: { projectSlug: string, userStoryId: string, sharedAtcId: string },
+  ): Promise<void> {
+    await this.goto(args);
+
+    const acCards = this.page.locator('[data-testid^="traceability-ac-"]');
+    await expect(acCards).toHaveCount(2);
+
+    const sharedAtcRows = this.page.locator(`[data-testid="traceability-atc-row-${args.sharedAtcId}"]`);
+    await expect(sharedAtcRows).toHaveCount(2);
+  }
+
+  /**
+   * ATC: Open a Story whose latest Run resolved to each of the 4 terminal
+   * statuses in turn - expects the status pill to show the matching copy
+   * per the AC-01 vocabulary, corrected post-BK-317 (BK-45, TC-BK45-04 /
+   * BK-457).
+   *
+   * The latest-run status pill is the single most load-bearing piece of
+   * information on the page - a wrong or stale pill actively misleads a
+   * reviewer into believing a test passed when it did not, or vice versa.
+   * This exact surface already produced BK-317 (a vocabulary Defect,
+   * resolved by spec correction, not a code fix).
+   *
+   * @param args - the Project slug, the Story, and the target ATC/expected copy pair
+   * @param args.projectSlug - Project slug the Story belongs to
+   * @param args.userStoryId - the Story hosting the parametrized ATC rows
+   * @param args.atcId - the ATC whose latest run resolved to the target status
+   * @param args.expectedCopy - the exact pill text expected ("Pass"/"Fail"/"Blocked"/"Aborted")
+   */
+  @atc('BK-457')
+  async expectRunStatusPillMatchesTerminalStatus(
+    args: { projectSlug: string, userStoryId: string, atcId: string, expectedCopy: string },
+  ): Promise<void> {
+    await this.goto(args);
+
+    const atcRow = this.page.locator(`[data-testid="traceability-atc-row-${args.atcId}"]`);
+    await expect(atcRow).toBeVisible();
+
+    const runStatusPill = atcRow.locator('span.status-chip').nth(1);
+    await expect(runStatusPill).toHaveText(args.expectedCopy);
+  }
+
+  /**
+   * ATC: Open a Story whose latest Run is still in-flight ("running"),
+   * after an earlier finished Run on the same Test already recorded a
+   * terminal verdict - expects the in-progress state to render, never the
+   * stale prior run's pass/fail/blocked pill (BK-45, TC-BK45-05 / BK-458).
+   *
+   * A run that is still running must never be presented as a false pass or
+   * fail. A regression letting a stale prior-run status leak through during
+   * an active run would silently give a reviewer false confidence about
+   * current coverage - this ATC seeds a genuinely prior-then-current run
+   * pair, not a lone in-flight run, so the "no stale leak" half of the
+   * contract is actually exercised.
+   *
+   * @param args - the Project slug and the Story to open
+   * @param args.projectSlug - Project slug the Story belongs to
+   * @param args.userStoryId - the Story hosting the in-flight ATC
+   * @param args.atcId - the ATC whose latest run is running, with an earlier finished run beneath it
+   */
+  @atc('BK-458')
+  async expectInFlightRunNotMisleading(
+    args: { projectSlug: string, userStoryId: string, atcId: string },
+  ): Promise<void> {
+    await this.goto(args);
+
+    const atcRow = this.page.locator(`[data-testid="traceability-atc-row-${args.atcId}"]`);
+    await expect(atcRow).toHaveAttribute('data-status', 'running');
+
+    const runStatusPill = atcRow.locator('span.status-chip').nth(1);
+    await expect(runStatusPill).toHaveText('Running');
+    await expect(runStatusPill).not.toHaveText(/pass|fail|blocked/i);
+  }
+
+  /**
+   * ATC: Open a Story whose latest Run has 2+ linked defects with different
+   * creation timestamps - expects all defects to render under that run,
+   * ordered most-recently-created first (BK-45, TC-BK45-07 / BK-459).
+   *
+   * Order matters here because a reviewer scanning the chain expects the
+   * most recent defect status first. A regression reverting to ascending or
+   * unstable order would not fail any single-defect assertion, but would
+   * degrade the review workflow for every multi-defect run.
+   *
+   * Does NOT assert a Defect's ID - the traceability chain view never
+   * renders one anywhere in the DOM (see the component docblock and the
+   * product Improvement filed for this gap, BK-603); only title + status
+   * are asserted, per `expectChainRenders`'s (`@atc('BK-445')`) established
+   * contract.
+   *
+   * @param args - the Project slug, the Story, and the ATC hosting the ordered defects
+   * @param args.projectSlug - Project slug the Story belongs to
+   * @param args.userStoryId - the Story hosting the multi-defect ATC
+   * @param args.atcId - the ATC whose latest run has 2+ linked defects
+   * @param args.newestDefectTitle - the most-recently-created defect's title, expected first
+   * @param args.oldestDefectTitle - the earlier-created defect's title, expected second
+   */
+  @atc('BK-459')
+  async expectDefectsOrderedNewestFirst(
+    args: { projectSlug: string, userStoryId: string, atcId: string, newestDefectTitle: string, oldestDefectTitle: string },
+  ): Promise<void> {
+    await this.goto(args);
+
+    const atcRow = this.page.locator(`[data-testid="traceability-atc-row-${args.atcId}"]`);
+    const defectTitles = atcRow.locator('div.flex.items-center.gap-1\\.5.text-xs > span.truncate.text-fg-2');
+
+    await expect(defectTitles).toHaveCount(2);
+    await expect(defectTitles.nth(0)).toHaveText(args.newestDefectTitle);
+    await expect(defectTitles.nth(1)).toHaveText(args.oldestDefectTitle);
+  }
+
+  /**
+   * ATC: Open a Story whose ATC shares a Test/Run with a different Story's
+   * ATC, where that different Story's ATC has a defect linked to it -
+   * expects the shared Run to render normally for this Story's own ATC,
+   * with the foreign Story's defect NEVER appearing anywhere in this
+   * Story's chain (BK-45 HIGH-severity cross-story defect-leak guard,
+   * TC-BK45-08 / BK-460).
+   *
+   * Defects are scoped via `bugs.atc_id`, not `run_id`, specifically so a
+   * defect belonging to a different story's ATC never bleeds into this
+   * story's chain even when the underlying Test/Run row is shared. A
+   * `story-traceability-isolation.test.ts` DB-integration suite (11/11
+   * passing) proves the SQL predicate in isolation; this ATC is the only
+   * proof the live UI actually respects that scoping boundary end-to-end -
+   * a regression here would be a CRITICAL-severity cross-story data leak.
+   *
+   * @param args - the Project slug, this Story, and the shared ATC/foreign defect identity
+   * @param args.projectSlug - Project slug the Story belongs to
+   * @param args.userStoryId - this Story, whose own ATC shares the Run
+   * @param args.ownAtcId - this Story's own ATC in the shared Run
+   * @param args.foreignDefectTitle - the foreign Story's defect title, asserted absent everywhere
+   */
+  @atc('BK-460')
+  async expectSharedRunHidesForeignDefect(
+    args: { projectSlug: string, userStoryId: string, ownAtcId: string, foreignDefectTitle: string },
+  ): Promise<void> {
+    await this.goto(args);
+
+    const ownAtcRow = this.page.locator(`[data-testid="traceability-atc-row-${args.ownAtcId}"]`);
+    await expect(ownAtcRow).toBeVisible();
+    await expect(ownAtcRow.locator('span.truncate.text-fg-2').first()).not.toHaveText('');
+
+    await expect(this.page.getByText(args.foreignDefectTitle, { exact: true })).toHaveCount(0);
+  }
+
+  /**
    * ATC: Enumerate the screen's controls - expects "Export snapshot" to be
    * the only mutating control, with no share / publish / copy-link
    * affordance anywhere (BK-50 TC06, Option E scope guard, comments
