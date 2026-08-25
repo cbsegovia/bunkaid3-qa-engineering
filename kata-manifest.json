@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "generatedAt": "2026-08-24T15:46:05.945Z",
+  "generatedAt": "2026-08-25T15:16:22.480Z",
   "components": {
     "api": [
       {
@@ -101,29 +101,29 @@
         "relativePath": "tests\\components\\ui\\TraceabilityPage.ts",
         "atcs": [
           {
-            "id": "BK-110",
-            "method": "expectChainRenders",
-            "line": 69
-          },
-          {
             "id": "BK-331",
             "method": "exportSnapshot",
-            "line": 114
+            "line": 184
           },
           {
             "id": "BK-334",
             "method": "expectAnonymousRedirectToLogin",
-            "line": 139
+            "line": 209
           },
           {
             "id": "BK-336",
             "method": "expectNoShareAffordance",
-            "line": 170
+            "line": 240
+          },
+          {
+            "id": "BK-445",
+            "method": "expectChainRenders",
+            "line": 99
           },
           {
             "id": "BK-453",
             "method": "expectNoStorySelectedPrompt",
-            "line": 86
+            "line": 156
           }
         ]
       }
