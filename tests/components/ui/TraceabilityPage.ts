@@ -473,6 +473,44 @@ export class TraceabilityPage extends UiBase {
   }
 
   /**
+   * ATC: Open the chain for a Story whose `archived_at` is set - expects the
+   * chain to render normally (never the uniform-404 non-disclosure state),
+   * with a visible "archived" banner and no mutating (new/edit/create/
+   * delete/archive) affordance anywhere in the chain view (BK-45
+   * State-Transition, TC-BK45-19 / BK-451).
+   *
+   * Deliberately distinct from `expectNonDisclosureNotFound` (`@atc('BK-448')`):
+   * an archived Story is a legitimate, still-visible lifecycle state, not an
+   * access-denial case - the two must never share an error-mapping path.
+   *
+   * SEEDED FIXTURE (2026-08-25, via the real `DELETE /v1/user-stories/{id}`
+   * archive endpoint - the TC's originally-documented fixture story
+   * `b57d3e7c-e896-4616-be62-088a9f7f95c2` returns 404 today, same
+   * unreachable-legacy-fixture class as BK-453's stale project slug):
+   * Story `31818967-f715-465c-bdb1-ac8168fa3919` ("QA Fixture: archived
+   * story read-only banner (BK-451)") in `bk-45-traceability-fixtures`, one
+   * AC with one bound ATC, archived after seeding.
+   *
+   * @param args - the Project slug and the archived Story to open
+   * @param args.projectSlug - Project slug the Story belongs to
+   * @param args.userStoryId - a Story whose lifecycle `archived_at` is set
+   */
+  @atc('BK-451')
+  async expectArchivedStoryRendersReadOnly(args: { projectSlug: string, userStoryId: string }): Promise<void> {
+    await this.goto(args);
+
+    await expect(this.page.locator('[data-testid="workbench-not-found"]')).toHaveCount(0);
+
+    const chainView = this.page.locator('[data-testid="traceability-chain-view"]');
+    await expect(chainView).toBeVisible({ timeout: 15000 });
+
+    await expect(this.page.locator('[data-testid="traceability-archived-banner"]')).toBeVisible();
+
+    const mutatingControls = chainView.locator('button, a').filter({ hasText: /new|edit|create|delete|archive/i });
+    await expect(mutatingControls).toHaveCount(0);
+  }
+
+  /**
    * ATC: Enumerate the screen's controls - expects "Export snapshot" to be
    * the only mutating control, with no share / publish / copy-link
    * affordance anywhere (BK-50 TC06, Option E scope guard, comments
