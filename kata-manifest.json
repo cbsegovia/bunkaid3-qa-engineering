@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "generatedAt": "2026-08-25T23:15:38.891Z",
+  "generatedAt": "2026-08-25T23:49:09.989Z",
   "components": {
     "api": [
       {
@@ -113,7 +113,7 @@
           {
             "id": "BK-336",
             "method": "expectNoShareAffordance",
-            "line": 805
+            "line": 870
           },
           {
             "id": "BK-445",
@@ -186,6 +186,11 @@
             "line": 785
           },
           {
+            "id": "BK-461",
+            "method": "expectLayerGapCopy",
+            "line": 834
+          },
+          {
             "id": "BK-462",
             "method": "expectUncoveredStripForZeroAtcAc",
             "line": 580
@@ -207,7 +212,7 @@
   "steps": [],
   "summary": {
     "totalComponents": 6,
-    "totalATCs": 31,
+    "totalATCs": 32,
     "apiComponents": 3,
     "uiComponents": 3,
     "stepsModules": 0
