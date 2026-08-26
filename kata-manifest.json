@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "generatedAt": "2026-08-17T01:47:32.719Z",
+  "generatedAt": "2026-08-26T00:07:12.465Z",
   "components": {
     "api": [
       {
@@ -101,29 +101,109 @@
         "relativePath": "tests\\components\\ui\\TraceabilityPage.ts",
         "atcs": [
           {
-            "id": "BK-110",
-            "method": "expectChainRenders",
-            "line": 67
-          },
-          {
-            "id": "BK-111",
-            "method": "expectNoStorySelectedPrompt",
-            "line": 80
-          },
-          {
             "id": "BK-331",
             "method": "exportSnapshot",
-            "line": 100
+            "line": 247
           },
           {
             "id": "BK-334",
             "method": "expectAnonymousRedirectToLogin",
-            "line": 125
+            "line": 272
           },
           {
             "id": "BK-336",
             "method": "expectNoShareAffordance",
-            "line": 156
+            "line": 870
+          },
+          {
+            "id": "BK-445",
+            "method": "expectChainRenders",
+            "line": 105
+          },
+          {
+            "id": "BK-446",
+            "method": "expectZeroAcAuthoringGap",
+            "line": 528
+          },
+          {
+            "id": "BK-448",
+            "method": "expectNonDisclosureNotFound",
+            "line": 336
+          },
+          {
+            "id": "BK-449",
+            "method": "expectArchivedAcExcluded",
+            "line": 415
+          },
+          {
+            "id": "BK-450",
+            "method": "expectGhostAtcExcluded",
+            "line": 457
+          },
+          {
+            "id": "BK-451",
+            "method": "expectArchivedStoryRendersReadOnly",
+            "line": 498
+          },
+          {
+            "id": "BK-452",
+            "method": "expectDraftStoryHasNoLifecycleGate",
+            "line": 376
+          },
+          {
+            "id": "BK-453",
+            "method": "expectNoStorySelectedPrompt",
+            "line": 219
+          },
+          {
+            "id": "BK-455",
+            "method": "expectAtcRepeatsUnderEachBoundAc",
+            "line": 650
+          },
+          {
+            "id": "BK-456",
+            "method": "expectMinimalChainRenders",
+            "line": 178
+          },
+          {
+            "id": "BK-457",
+            "method": "expectRunStatusPillMatchesTerminalStatus",
+            "line": 681
+          },
+          {
+            "id": "BK-458",
+            "method": "expectInFlightRunNotMisleading",
+            "line": 712
+          },
+          {
+            "id": "BK-459",
+            "method": "expectDefectsOrderedNewestFirst",
+            "line": 749
+          },
+          {
+            "id": "BK-460",
+            "method": "expectSharedRunHidesForeignDefect",
+            "line": 785
+          },
+          {
+            "id": "BK-461",
+            "method": "expectLayerGapCopy",
+            "line": 834
+          },
+          {
+            "id": "BK-462",
+            "method": "expectUncoveredStripForZeroAtcAc",
+            "line": 580
+          },
+          {
+            "id": "BK-463",
+            "method": "expectMixedCoverageRendersSideBySide",
+            "line": 614
+          },
+          {
+            "id": "BK-464",
+            "method": "expectZeroCoverageBannerRenders",
+            "line": 553
           }
         ]
       }
@@ -132,7 +212,7 @@
   "preconditions": [],
   "summary": {
     "totalComponents": 6,
-    "totalATCs": 16,
+    "totalATCs": 32,
     "apiComponents": 3,
     "uiComponents": 3,
     "preconditionModules": 0
