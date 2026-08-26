@@ -242,7 +242,7 @@ unmapped:
 link_types:
   required:
     test:
-      name: Tests
+      name: Test # live instance name (confirmed 2026-08-26 via GET /rest/api/3/issueLinkType) — was cached as "Tests" (plural), drift
       outward: tests
       inward: is tested by
       description: Links a Story to its Test Case issues (test-documentation touchpoint).
