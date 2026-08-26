@@ -18,6 +18,7 @@ import type { TestContextOptions } from '@TestContext';
 
 import { ApiBase } from '@api/ApiBase';
 import { AuthApi } from '@api/AuthApi';
+import { ProjectsApi } from '@api/ProjectsApi';
 import { TraceabilityApi } from '@api/TraceabilityApi';
 import { UserStoryApi } from '@api/UserStoryApi';
 
@@ -35,6 +36,9 @@ export class ApiFixture extends ApiBase {
   /** Traceability component - BK-45 evidence chain read */
   readonly traceability: TraceabilityApi;
 
+  /** Projects component - BK-266 setup helper (seed projects) */
+  readonly projects: ProjectsApi;
+
   constructor(options: TestContextOptions) {
     super(options);
 
@@ -42,6 +46,7 @@ export class ApiFixture extends ApiBase {
     this.auth = new AuthApi(options);
     this.userStory = new UserStoryApi(options);
     this.traceability = new TraceabilityApi(options);
+    this.projects = new ProjectsApi(options);
   }
 
   // ============================================
@@ -57,6 +62,7 @@ export class ApiFixture extends ApiBase {
     this.auth.setAuthToken(token);
     this.userStory.setAuthToken(token);
     this.traceability.setAuthToken(token);
+    this.projects.setAuthToken(token);
   }
 
   /**
@@ -67,5 +73,6 @@ export class ApiFixture extends ApiBase {
     this.auth.clearAuthToken();
     this.userStory.clearAuthToken();
     this.traceability.clearAuthToken();
+    this.projects.clearAuthToken();
   }
 }

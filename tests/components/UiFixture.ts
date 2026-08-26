@@ -17,6 +17,7 @@
 import type { TestContextOptions } from '@TestContext';
 
 import { LoginPage } from '@ui/LoginPage';
+import { ProjectsPage } from '@ui/ProjectsPage';
 import { SnapshotDocumentPage } from '@ui/SnapshotDocumentPage';
 import { TraceabilityPage } from '@ui/TraceabilityPage';
 import { UiBase } from '@ui/UiBase';
@@ -35,6 +36,9 @@ export class UiFixture extends UiBase {
   /** Snapshot document component - the BK-50 exported document itself */
   readonly snapshot: SnapshotDocumentPage;
 
+  /** Projects page component - BK-266 index + dedicated create route */
+  readonly projects: ProjectsPage;
+
   constructor(options: TestContextOptions) {
     super(options);
 
@@ -42,5 +46,6 @@ export class UiFixture extends UiBase {
     this.login = new LoginPage(options);
     this.traceability = new TraceabilityPage(options);
     this.snapshot = new SnapshotDocumentPage(options);
+    this.projects = new ProjectsPage(options);
   }
 }

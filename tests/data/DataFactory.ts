@@ -9,7 +9,7 @@
  *   - Import directo: import { DataFactory } from '@DataFactory'
  */
 
-import type { TestCredentials, TestUser, TestUserStory } from './types';
+import type { TestCredentials, TestProject, TestUser, TestUserStory } from './types';
 
 import { faker } from '@faker-js/faker';
 
@@ -86,6 +86,18 @@ export class DataFactory {
   static createUserStory(overrides: Partial<TestUserStory> & { moduleId: string }): TestUserStory {
     return {
       title: `Test Story ${faker.lorem.words(4)}`,
+      ...overrides,
+    };
+  }
+
+  /**
+   * Genera datos de Project para testing (BK-266).
+   * Nombre siempre único (id de faker) para que ejecuciones en paralelo
+   * nunca choquen contra la validación de nombre duplicado.
+   */
+  static createProject(overrides?: Partial<TestProject>): TestProject {
+    return {
+      name: `Test Project ${this.uniqueId()}`,
       ...overrides,
     };
   }
