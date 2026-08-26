@@ -512,7 +512,7 @@
       },
       "in_review": {
         "id": "10033",
-        "name": "In Review",
+        "name": "En revisión",
         "category": "indeterminate"
       },
       "automated": {
@@ -522,7 +522,7 @@
       },
       "ready": {
         "id": "10013",
-        "name": "READY",
+        "name": "Listo",
         "category": "done"
       },
       "manual": {
