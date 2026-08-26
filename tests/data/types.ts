@@ -34,6 +34,11 @@ export interface TestUserStory {
   moduleId: string
 }
 
+export interface TestProject {
+  name: string
+  description?: string
+}
+
 // ============================================
 // Auth/Fixture State Types
 // ============================================

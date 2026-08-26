@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "generatedAt": "2026-08-26T00:07:12.465Z",
+  "generatedAt": "2026-08-26T15:29:47.931Z",
   "components": {
     "api": [
       {
@@ -19,6 +19,12 @@
             "line": 137
           }
         ]
+      },
+      {
+        "name": "ProjectsApi",
+        "file": "ProjectsApi.ts",
+        "relativePath": "tests\\components\\api\\ProjectsApi.ts",
+        "atcs": []
       },
       {
         "name": "TraceabilityApi",
@@ -75,6 +81,58 @@
             "id": "BK-104",
             "method": "loginWithInvalidCredentials",
             "line": 118
+          }
+        ]
+      },
+      {
+        "name": "ProjectsPage",
+        "file": "ProjectsPage.ts",
+        "relativePath": "tests\\components\\ui\\ProjectsPage.ts",
+        "atcs": [
+          {
+            "id": "BK-604",
+            "method": "listProjectsOldestFirstWithNameAndSlug",
+            "line": 89
+          },
+          {
+            "id": "BK-605",
+            "method": "listSingleProjectAtLowerBoundary",
+            "line": 127
+          },
+          {
+            "id": "BK-606",
+            "method": "activateProjectEntryNavigatesToProject",
+            "line": 142
+          },
+          {
+            "id": "BK-607",
+            "method": "showsDescriptionWhenPresentOmitsWhenAbsent",
+            "line": 156
+          },
+          {
+            "id": "BK-609",
+            "method": "createProjectFromDedicatedRouteLandsOnProject",
+            "line": 178
+          },
+          {
+            "id": "BK-610",
+            "method": "rejectsShortNameAndPreservesInput",
+            "line": 208
+          },
+          {
+            "id": "BK-611",
+            "method": "acceptsThreeCharacterBoundaryName",
+            "line": 226
+          },
+          {
+            "id": "BK-612",
+            "method": "refusesDuplicateProjectName",
+            "line": 242
+          },
+          {
+            "id": "BK-615",
+            "method": "newProjectNavControlOpensCreateRoute",
+            "line": 257
           }
         ]
       },
@@ -211,10 +269,10 @@
   },
   "preconditions": [],
   "summary": {
-    "totalComponents": 6,
-    "totalATCs": 32,
-    "apiComponents": 3,
-    "uiComponents": 3,
+    "totalComponents": 8,
+    "totalATCs": 41,
+    "apiComponents": 4,
+    "uiComponents": 4,
     "preconditionModules": 0
   }
 }

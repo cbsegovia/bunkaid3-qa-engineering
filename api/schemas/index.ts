@@ -11,6 +11,7 @@
  */
 
 export type * from './auth.types';
+export type * from './project.types';
 export type * from './traceability.types';
 export type * from './userStory.types';
 
