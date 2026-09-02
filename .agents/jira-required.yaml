@@ -276,6 +276,13 @@ link_types:
       description: Links an ATR (Story) to its Test Case issues — ATR executes TC (test-documentation touchpoint).
       used_by: [test-documentation]
 
+    test_automation:
+      name: Test Automation
+      outward: automation test for
+      inward: is automated by
+      description: Binds an automated test (KATA ATC) to the manual Test Case it automates — required signal alongside the automated/automation-candidate label flip (test-automation touchpoint).
+      used_by: [test-automation]
+
 # Issue types (`work_types`) plus the canonical statuses + transitions the
 # methodology requires per work type. Validated by `bun run jira:check` against
 # the catalog at `.agents/jira-workflows.json`. Status / transition slugs are
@@ -752,3 +759,18 @@ work_types:
     description: Xray Precondition — reusable test prerequisite (not synced)
     sync: never
     local_dir: preconditions
+
+  subtask:
+    # `A | B | C` = ordered alternatives; the first one the project actually has
+    # wins. The subtask level is named differently per instance: Jira's default is
+    # "Sub-task", the BK instance calls it "Task", a Spanish-localized instance
+    # calls it "Subtarea". Declaring a single name made every other spelling a
+    # silent skip in jira:sync-workflows — which is exactly why this work_type was
+    # missing from the catalog while being declared right here. Add your own
+    # spelling to the list if your instance uses another.
+    # Consumed by /shift-left-testing for the per-Story "[QA] Shift-Left Review"
+    # tracking subtask (find-or-create; skip with a warning when the project has
+    # no subtask-level type at all).
+    jira_issue_type: Sub-task | Task | Subtarea
+    description: Generic subtask under a Story — tracking-only, never synced as its own folder
+    sync: never

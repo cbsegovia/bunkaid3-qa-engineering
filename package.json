@@ -51,6 +51,7 @@
     "jira:sync-issues": "bun scripts/sync-jira-issues.ts",
     "jira:sync-link-types": "bun scripts/sync-jira-link-types.ts",
     "jira:sync-workflows": "bun scripts/sync-jira-workflows.ts",
+    "jira:live-diff": "bun scripts/jira-live-diff-fields.ts",
     "kata:manifest:check": "bun scripts/kata-manifest.ts --check",
     "kata:manifest:watch": "bun scripts/kata-manifest.ts --watch",
     "kata:manifest": "bun scripts/kata-manifest.ts",

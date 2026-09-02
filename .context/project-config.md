@@ -56,7 +56,7 @@ Note: environment URLs are NOT independently re-derived from the target repo's o
 
 ## Tools and Access
 
-- Issue tracker: Jira Cloud — resolved via `[ISSUE_TRACKER_TOOL]` (`acli`), instance `upexgalaxy71.atlassian.net` per this QA repo's `.agents/project.yaml`
+- Issue tracker: Jira Cloud — resolved via `[ISSUE_TRACKER_TOOL]` (`acli`), instance `upexgalaxy72.atlassian.net` per this QA repo's `.agents/project.yaml`
 - Project key: `BK`
 - Database: resolved via `[DB_TOOL]` (DBHub MCP) — target repo ships its own `dbhub.toml`
 - Docs: target repo has its own `docs/` directory (not enumerated in this pass) plus in-app API docs at `/api/docs` (Scalar) and a QA testability guide page at `/qa`

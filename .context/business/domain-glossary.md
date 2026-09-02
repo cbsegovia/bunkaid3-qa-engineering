@@ -106,7 +106,7 @@
   "title": "BK-9 — Apply discount code at checkout",
   "description": "As a shopper I want to apply a discount code...",
   "external_id": "BK-9",
-  "external_url": "https://upexgalaxy71.atlassian.net/browse/BK-9",
+  "external_url": "https://upexgalaxy72.atlassian.net/browse/BK-9",
   "created_at": "2026-05-19T10:15:00Z"
 }
 ```
