@@ -3,17 +3,17 @@
   "templateRepo": "upex-galaxy/agentic-qa-boilerplate",
   "templateCommit": "",
   "perComponentCommit": {
-    "skills": "b71a4a624498a6bb99201f72b6ae6342b4542e8b",
+    "skills": "06947fa1e0e334db64660502d83620ec11b6210a",
     "commands": "ff1a319d1a04a0a7ff08a4a8775dce5d52f4818a",
-    "scripts": "b71a4a624498a6bb99201f72b6ae6342b4542e8b",
-    "docs": "ff1a319d1a04a0a7ff08a4a8775dce5d52f4818a",
+    "scripts": "06947fa1e0e334db64660502d83620ec11b6210a",
+    "docs": "06947fa1e0e334db64660502d83620ec11b6210a",
     "cli": "92478af0100187cddace8618a427a7e3b4860b90",
     "vscode": "b08266ac907637e6d74539d0f396481336dcf113",
     "husky": "b71a4a624498a6bb99201f72b6ae6342b4542e8b",
     "agents-docs": "ff1a319d1a04a0a7ff08a4a8775dce5d52f4818a",
     "claude-config": "ff1a319d1a04a0a7ff08a4a8775dce5d52f4818a",
     "tooling": "01c0a2f669c592a2bb26b5abc8d112b6eda5da40",
-    "env-template": "ff1a319d1a04a0a7ff08a4a8775dce5d52f4818a",
+    "env-template": "06947fa1e0e334db64660502d83620ec11b6210a",
     "agent-compatibility": "ff1a319d1a04a0a7ff08a4a8775dce5d52f4818a",
     "codex-config": "ff1a319d1a04a0a7ff08a4a8775dce5d52f4818a",
     "agent-root-config": "ff1a319d1a04a0a7ff08a4a8775dce5d52f4818a"
@@ -21,7 +21,7 @@
   "syncedComponents": [],
   "ignoreFileSync": {
     ".prettierignore": {
-      "lastSyncedSha": "6460aa238f8aeb3794a1496d3cac5b47199e9698",
+      "lastSyncedSha": "2d65bedc55be87885be51510bc1b977c8aef67c2",
       "appendedLines": [
         "api/openapi*",
         "api/.openapi-config.json",
@@ -33,11 +33,12 @@
         "scripts/contribution-audit/roster.local.json",
         "scripts/contribution-audit/report_template.html",
         ".scratch/",
-        ".session/"
+        ".session/",
+        ".backups*/"
       ]
     },
     ".gitignore": {
-      "lastSyncedSha": "c5dd162728278252c192d3ff34a9fd487ba34165",
+      "lastSyncedSha": "a293ad9759098669d09ad4106f2e96acb2c11187",
       "appendedLines": [
         "**/evidence/",
         ".template/claude-md.upstream.sha",
@@ -64,7 +65,8 @@
         ".agents/skills/playwright-best-practices/",
         ".agents/skills/resend-cli/",
         "!skills-lock.json",
-        "!**/skills-lock.json"
+        "!**/skills-lock.json",
+        ".backups*/"
       ]
     }
   },
@@ -102,6 +104,6 @@
     }
   },
   "cliVersion": "7.0",
-  "lastSyncedAt": "2026-08-26T00:58:05.252Z",
+  "lastSyncedAt": "2026-09-02T12:12:48.963Z",
   "variableSystemVersion": 1
 }

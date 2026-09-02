@@ -100,7 +100,7 @@ Canonical reading order for any AI starting cold on a test-automation workflow. 
 3. `tests/components/` — existing Api / Page / Steps shape on disk. Establishes naming, helper-vs-ATC split, fixture registration patterns to follow.
 4. The Story's `implementation-plan.md` (dev plan) + the ATP under `.context/PBI/epics/EPIC-<KEY>-<slug>/stories/STORY-<KEY>-<slug>/` — Jira-synced, READ-ONLY caches. Jira is source of truth; NEVER hand-write these. Materialize via `bun run jira:sync-issues get <STORY-KEY> --include-comments`, then **read the ENTIRE synced Story folder** — every per-field `.md` (`story.md`, `acceptance-criteria.md`, scope, business rules, etc.) **plus `comments.md`** — not just one field. Omitting ACs, scope, business rules, or comment context produces incomplete ATCs. The **ATP read is modality-aware** (resolve via `.agents/project.yaml` `testing.tms_cli`, same gate as `/test-documentation` §Phase 0):
    - **Modality jira-native**: ATP = Story field `{{jira.acceptance_test_plan}}` → synced `acceptance-test-plan.md` in the Story folder (from the same `jira:sync-issues get <STORY-KEY> --include-comments`).
-   - **Modality jira-xray**: ATP = Test Plan issue `description` → `bun run jira:sync-issues get <ATP_KEY>` → `test-plans/TESTPLAN-<KEY>-<slug>.md`; per-TC run results come from `[TMS_TOOL]` (xray-cli), not the sync.
+   - **Modality jira-xray**: ATP = Test Plan issue `description` → `bun run jira:sync-issues get <ATP_KEY>` → `test-plans/ATP-<KEY>-<slug>.md`; per-TC run results come from `[TMS_TOOL]` (xray-cli), not the sync. Filename note: the acronym prefix comes from a conforming ladder title; a Plan or Execution whose title does not follow the grammar keeps the legacy `TESTPLAN-` / `TESTEXEC-` / `RETESTEXEC-` prefix.
 
    The dev `implementation-plan.md` carries the implementation approach + (when produced by `/test-documentation`) the per-TC candidate verdict and component mapping. Cite from the session `plan.md` rather than duplicating. NOTE: this is the Story-folder *dev* `implementation-plan.md` — do NOT confuse it with the hand-authored *automation* plan (`test-specs/<scope>/automation-plan.md`) you write in Phase 1.
 5. The Story's AC (acceptance criteria) — source of truth for scenarios that become ATCs. Read from the same synced `.md` files (`acceptance-criteria.md` / `story.md`) produced by `bun run jira:sync-issues get <STORY-KEY> --include-comments`. NEVER use `[ISSUE_TRACKER_TOOL]` `view` for these custom fields — `view` returns `null` for `customfield_*`. If a field is absent from the instance, the sync emits a pointer stub and the content lives in comments/description per `.agents/jira-required.yaml` `fallback:`. Resolve the issue key from the scope picker. **TC note**: a TC body = the `Test` issue `description` (synced both modalities via `bun run jira:sync-issues get <TEST-KEY>`); the Xray Gherkin / Test-Steps plugin field is NOT synced — it mirrors the description, so read the synced TC `.md` for Gherkin/steps.
@@ -222,6 +222,20 @@ bun run lint:check                         # ESLint, no errors
 ```
 
 If any step fails, fix before moving to Review.
+
+6. **Signal it in the TMS** — per TC, both signals, neither optional:
+   - **Link**: bind the automated test to the manual `Test` it automates via the `test_automation`
+     link type (`{{jira.link_types.test_automation}}`, outward `automation test for` — slug-resolved,
+     never a literal; catalog: `agentic-qa-core/references/traceability-linking.md` §3).
+   - **Labels**: ADD `automated` on the `Test` and REMOVE `automation-candidate` — the two are
+     mutually exclusive (`test-documentation/SKILL.md` §Labels). Flip them at the point the TC
+     actually reaches **AUTOMATED** (see §Git & TMS handoff: the `merged` transition after the
+     suite PR lands on `main` with CI green), not on a merge into the integration trunk.
+
+```
+[ISSUE_TRACKER_TOOL] Link work items: {AUTOMATED_TEST_KEY} -> {TC_KEY}  type: {{jira.link_types.test_automation}}
+[ISSUE_TRACKER_TOOL] Update work item: {TC_KEY}  labels: + automated  - automation-candidate
+```
 
 **Progress checkpoint**: after each Code subagent returns (per scope unit — one per TC for module-driven, one total for ticket-driven), the orchestrator appends a phase entry to `.session/test-automation/<scope>/progress.md` per `agentic-qa-core/references/session-management.md` §7. For module-driven scope, mid-batch resume reads the entries and skips already-coded ATCs.
 
